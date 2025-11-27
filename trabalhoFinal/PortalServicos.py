@@ -474,19 +474,276 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
             break
     print("Sistema finalizado com sucesso")
 
+
+# ------------------ Estafeta functions (imported/adapted from PortalEstafeta) ------------------
+def aceitarRecusar(tarefas, anomalia, timestamps, estado, estadoAtual, contadorSucesso, contadorTarefas):
+    var_return = 0
+    print("Existem as seguintes encomendas atribuídas com os IDs no ínicio e contacto no final:")
+    for i in range(0, len(tarefas)):
+        print(str(1 + i) + ") " + tarefas[i])
+    while True:    #This simulates a Do Loop
+        print("Qual o ID da encomenda que pretende aceitar ou trocar de estado?(No caso de querer recusar digite outro número qualquer)")
+        idTarefa = int(input())
+        if 1 <= idTarefa <= len(tarefas):
+            print("Qual operação pretende executar:" + chr(13) + "1-Aceitar atribuição;" + chr(13) + "2- Trocar estado operacional da encomenda;")
+            x = int(input())
+            if x == 1:
+                print("O estado da sua tarefa está em recolha.")
+                estadoAtual[idTarefa - 1] = estado[0]
+                contadorTarefas[idTarefa - 1] = 1
+            else:
+                if x == 2:
+                    print("Digite para que estado pretende alterar a tarefa escolhida:")
+                    for i in range(0, len(estado)):
+                        print(str(i + 1) + ")" + estado[i])
+                    x = int(input())
+                    estadoAtual[idTarefa - 1] = estado[x - 1]
+                    print("A encomenda passou ao estado: " + estadoAtual[idTarefa - 1])
+                    if estadoAtual[idTarefa - 1] == "Concluído.":
+                        contadorSucesso[idTarefa - 1] = contadorSucesso[idTarefa - 1] + 1
+                    else:
+                        contadorSucesso[idTarefa - 1] = float(contadorSucesso[idTarefa - 1]) / 2
+                        contadorTarefas[idTarefa - 1] = 1
+        else:
+            print("Qual tarefa pretende recusar?")
+            idTarefa = int(input())
+            print("Qual o motivo para recusar a encomenda?")
+            for i in range(0, len(anomalia)):
+                print(str(i + 1) + ")" + anomalia[i])
+            motivo = int(input())
+            print("Introduza a data e hora no formato DD/MM/AAAA HH:MM.")
+            timestamp = input()
+            print("O motivo pela qual a encomenda não vai ser entregue é o seguinte: " + anomalia[motivo - 1] + " E a data e hora que o estafeta relatou a anomalia foi: " + timestamp)
+            timestamps[idTarefa - 1] = timestamp
+        print("Se pretender aceitar/ recusar/ trocar de estado alguma outra encomenda, digite 1.")
+        var_return = int(input())
+        if var_return != 1: break
+
+def tarefasAtribuidas(tarefas):
+    print("---Lista de tarefas atribuídas---")
+    for i in range(0, len(tarefas)):
+        print(str(i + 1) + ") " + tarefas[i])
+
+def estafeta_menu():
+    print("----MENU ESTAFETA----")
+    print("1) Lista de tarefas atribuídas;")
+    print("2) Aceitar e recusar atribuição e trocar estado operacional de encomenda;")
+    print("3) Registar localização;")
+    print("4) Reportar anomalias;")
+    print("5) Consultar dados pessoais;")
+    print("6) Sair;")
+    opcao = int(input())
+    return opcao
+
+def estafeta_main():
+    contadorTarefas = [0] * 4
+    contadorSucesso = [0] * 4
+    timestamps = [""] * 4
+    anomalia = [""] * 5
+    estadoAtual = [""] * 4
+    localizacao = [""] * 4
+    tarefas = [""] * 4
+    estado = [""] * 4
+
+    anomalia[0] = "Endereço incorreto."
+    anomalia[1] = "Cliente ausente."
+    anomalia[2] = "Avaria no veículo."
+    anomalia[3] = "Condições metereológicas adversas."
+    anomalia[4] = "Produto danificado."
+    tarefas[0] = "Lisboa, Porto, 966607184"
+    tarefas[1] = "Guimarães, Fafe, 93456064"
+    tarefas[2] = "Bragança, Alentejo, 92349599"
+    tarefas[3] = "Póvoa de Varzim, guimarães, 912345678"
+    estado[0] = "Em recolha."
+    estado[1] = "Em distribuição."
+    estado[2] = "Concluído."
+    estado[3] = "Falhado."
+    menuCall = 0
+    repeat = 0
+    print("Seja bem vindo ao portal do estafeta, qual o seu nome?")
+    nome = input()
+    print("O que o/a " + nome + " deseja fazer?")
+    for i in range(0, len(contadorTarefas)):
+        contadorTarefas[i] = 0
+    for i in range(0, len(contadorSucesso)):
+        contadorSucesso[i] = 0
+    idTarefa = 0
+    while True:    #This simulates a Do Loop
+        opcao = estafeta_menu()
+        if opcao == 1:
+            tarefasAtribuidas(tarefas)
+            menuCall = 1
+        else:
+            if opcao == 2:
+                aceitarRecusar(tarefas, anomalia, timestamps, estado, estadoAtual, contadorSucesso, contadorTarefas)
+                print("Deseja fazer mais alguma operação? Se sim digite 1.")
+                menuCall = int(input())
+            else:
+                if opcao == 3:
+                    print("Qual o ID da tarefa que está a realizar?")
+                    tarefasAtribuidas(tarefas)
+                    idTarefa = int(input())
+                    print("Qual a sua localização atual.")
+                    loc = input()
+                    print("A sua localização foi registada: " + loc)
+                    tarefas[idTarefa - 1] = loc
+                    print("Deseja fazer mais alguma operação? Se sim digite 1.")
+                    menuCall = int(input())
+                else:
+                    if opcao == 4:
+                        print("Qual o ID da sua tarefa?")
+                        tarefasAtribuidas(tarefas)
+                        idTarefa = int(input())
+                        print("Qual o motivo da anomalia?")
+                        textoLivre = input()
+                        print("Deseja realizar mais alguma operação? Se sim digite 1.")
+                        menuCall = int(input())
+                    else:
+                        if opcao == 5:
+                            print("Qual o ID da sua tarefa?")
+                            idTarefa = int(input())
+                            contadorSucesso[idTarefa - 1] = float(contadorTarefas[idTarefa - 1]) / 2 * 100
+                            print("Tarefas realizadas: " + str(contadorTarefas[idTarefa - 1]))
+                            print("Taxa de sucesso: " + str(contadorSucesso[idTarefa - 1]) + "%")
+                        else:
+                            menuCall = 0
+        if menuCall != 1: break
+    print("Obrigado por trabalhar connosco!")
+
+
+# ------------------ Portal Gestão de Produtos (adaptado de PortalGestaoProdutos) ------------------
+def calcfinal_prod(pedidoprodutoQtd, materialsPrice):
+    endcalc = 0
+    for i in range(0, len(pedidoprodutoQtd)):
+        endcalc = endcalc + pedidoprodutoQtd[i] * materialsPrice[i]
+    return endcalc
+
+def materialconsultation_prod(materialsName, materialsPrice, materialsQtd):
+    for i in range(0, len(materialsName)):
+        print(materialsName[i] + ": " + str(materialsPrice[i]) + "€ || stock : " + str(materialsQtd[i]))
+
+def gestao_produtos_menu():
+    print("Menu Gestão de Produtos:")
+    print("1 - Consultar materiais")
+    print("2 - Colocar materiais no carrinho")
+    print("3 - Finalização do pedido")
+    print("4 - Sair")
+    option = int(input())
+    return option
+
+def stockupdate_prod(materialsQtd, pedidoprodutoQtd):
+    for i in range(0, len(pedidoprodutoQtd)):
+        materialsQtd[i] = materialsQtd[i] - pedidoprodutoQtd[i]
+
+def validstock_prod(materialsQtd, pedidoprodutoQtd, materialsName):
+    for i in range(0, len(pedidoprodutoQtd)):
+        if pedidoprodutoQtd[i] > 0:
+            if pedidoprodutoQtd[i] > materialsQtd[i]:
+                print("A sua encomenda ultrapassa o nosso limite de stock de " + materialsName[i])
+            else:
+                print("A sua encomenda de " + materialsName[i] + " foi validada com sucesso")
+
+def gestao_produtos_main():
+    materialsName = [""] * 10
+    materialsQtd = [0] * 10
+    materialsPrice = [0] * 10
+    pedidoprodutoQtd = [0] * 10
+
+    for i in range(0, len(pedidoprodutoQtd)):
+        pedidoprodutoQtd[i] = 0
+
+    materialsName[0] = "Tintas"
+    materialsName[1] = "Martelo"
+    materialsName[2] = "Parafusos"
+    materialsName[3] = "Pincéis"
+    materialsName[4] = "Verniz"
+    materialsName[5] = "Nivelador"
+    materialsName[6] = "Lixa"
+    materialsName[7] = "Aparafusador"
+    materialsName[8] = "Fita métrica"
+    materialsName[9] = "Serra"
+
+    materialsQtd[0] = 10
+    materialsQtd[1] = 100
+    materialsQtd[2] = 6
+    materialsQtd[3] = 6
+    materialsQtd[4] = 10
+    materialsQtd[5] = 15
+    materialsQtd[6] = 150
+    materialsQtd[7] = 3
+    materialsQtd[8] = 57
+    materialsQtd[9] = 5
+
+    materialsPrice[0] = 11
+    materialsPrice[1] = 1.6
+    materialsPrice[2] = 5
+    materialsPrice[3] = 9
+    materialsPrice[4] = 14
+    materialsPrice[5] = 23
+    materialsPrice[6] = 1
+    materialsPrice[7] = 55
+    materialsPrice[8] = 3
+    materialsPrice[9] = 7
+
+    repeat = 0
+    endcalc = 0
+    menuCall = 0
+
+    while True:
+        option = gestao_produtos_menu()
+        if option == 1:
+            materialconsultation_prod(materialsName, materialsPrice, materialsQtd)
+            menuCall = 1
+        elif option == 2:
+            while True:
+                print("Indique o material desejado (número):")
+                for i in range(0, len(materialsName)):
+                    print(str(i) + " - " + materialsName[i])
+                i = int(input())
+                print("Que quantidade de " + materialsName[i] + " deseja?")
+                pedidoprodutoQtd[i] = float(input())
+                validstock_prod(materialsQtd, pedidoprodutoQtd, materialsName)
+                stockupdate_prod(materialsQtd, pedidoprodutoQtd)
+                print("Deseja adicionar mais artigos ao carrinho? Digite 1 para sim")
+                repeat = int(input())
+                if repeat != 1:
+                    break
+            endcalc = calcfinal_prod(pedidoprodutoQtd, materialsPrice)
+            menuCall = 1
+        elif option == 3:
+            endcalc = calcfinal_prod(pedidoprodutoQtd, materialsPrice)
+            print("O preço do seu carrinho é de " + str(endcalc) + "€")
+            print("O seu pedido encontra-se finalizado, obrigado pelo seu voto de confiança.")
+            menuCall = 0
+        elif option == 4:
+            menuCall = 0
+        else:
+            print("Opção inválida")
+            menuCall = 1
+
+        if menuCall != 1:
+            break
+
+
 def main():
     produtosNome, produtosQtd, produtosPreco = init_inventario()
     while True:
         print("Escolha o portal:")
         print("1 - Portal Gestor")
         print("2 - Portal Cliente")
-        print("3 - Sair")
+        print("3 - Portal Estafeta")
+        print("4 - Portal Gestão Produtos")
+        print("5 - Sair")
         escolha = int(input())
         if escolha == 1:
             gestor_main(produtosNome, produtosQtd, produtosPreco)
         elif escolha == 2:
             cliente_main(produtosNome, produtosQtd, produtosPreco)
         elif escolha == 3:
+            estafeta_main()
+        elif escolha == 4:
+            gestao_produtos_main()
+        elif escolha == 5:
             break
         else:
             print("Escolha inválida")
