@@ -240,7 +240,7 @@ def criacaoPedido(produtosNome, encomendas, produtosPreco):
         print("Quer adicionar mais produtos? Se sim, insere 1")
         repeat = int(input())
         if repeat != 1:
-            print("Boa escolha")
+            print("Boa escolha!")
             break
 
 def escolherDestino(destinosOpcao):
