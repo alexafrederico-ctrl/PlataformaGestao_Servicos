@@ -194,6 +194,84 @@ def init_inventario():
 
     return produtosNome, produtosQtd, produtosPreco
 
+def load_materials_dataframe():
+    """
+    Load the `materials.csv` file (located next to this script) into a pandas DataFrame.
+
+    Returns:
+        pandas.DataFrame or list[dict]: DataFrame when pandas is available, otherwise a list
+        of dicts (CSV rows) as a fallback.
+    """
+    import os
+    import csv
+
+    csv_path = os.path.join(os.path.dirname(__file__), 'materials.csv')
+    try:
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        return df
+    except ImportError:
+        # Fallback: read CSV with csv.DictReader and convert numeric fields
+        with open(csv_path, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            rows = []
+            for r in reader:
+                # Convert Quantity to int
+                try:
+                    r['Quantity'] = int(r.get('Quantity', 0))
+                except Exception:
+                    r['Quantity'] = 0
+                # Convert Price to float when possible
+                try:
+                    r['Price'] = float(r.get('Price', 0))
+                except Exception:
+                    r['Price'] = 0.0
+                rows.append(r)
+        print("pandas not installed; returning list of dicts. Install pandas with 'pip install pandas' to get a DataFrame.")
+        return rows
+
+def load_cliente_pedidos():
+    """
+    Lê os pedidos salvos pelo PortalCliente (para sincronização)
+    """
+    try:
+        import pandas as pd
+        import os
+        cliente_path = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais', 'pedidos.csv')
+        if os.path.exists(cliente_path):
+            return pd.read_csv(cliente_path)
+    except:
+        pass
+    return None
+
+def load_cliente_eventos():
+    """
+    Lê os eventos/tracking salvos pelo PortalCliente
+    """
+    try:
+        import pandas as pd
+        import os
+        cliente_path = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais', 'eventos_pedido.csv')
+        if os.path.exists(cliente_path):
+            return pd.read_csv(cliente_path)
+    except:
+        pass
+    return None
+
+def load_cliente_mensagens():
+    """
+    Lê as mensagens salvos pelo PortalCliente (confirmações/avisos)
+    """
+    try:
+        import pandas as pd
+        import os
+        cliente_path = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais', 'mensagens.csv')
+        if os.path.exists(cliente_path):
+            return pd.read_csv(cliente_path)
+    except:
+        pass
+    return None
+
 # ------------------ Cliente functions (adapted) ------------------
 def apresentacaoProd(produtosNome, produtosPreco):
     print("Lista de Produtos")
@@ -411,7 +489,10 @@ def gestor_menu():
     print("2 - Consultar zonas atendidas")
     print("3 - Consultar estafetas disponíveis")
     print("4 - Consultar encomendas aprovadas")
-    print("5 - Sair")
+    print("5 - Consultar pedidos do cliente (CSV)")
+    print("6 - Consultar eventos de pedidos (tracking)")
+    print("7 - Consultar mensagens (confirmações/avisos)")
+    print("8 - Sair")
     opcoes = int(input())
     return opcoes
 
@@ -466,9 +547,39 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
             print("******************************")
             voltar = 1
         elif opcoes == 5:
+            # Carregar e exibir pedidos do cliente
+            df_pedidos = load_cliente_pedidos()
+            if df_pedidos is not None and not df_pedidos.empty:
+                print("\n=== PEDIDOS DO CLIENTE ===")
+                print(df_pedidos.to_string(index=False))
+            else:
+                print("Nenhum pedido do cliente encontrado.")
+            print("******************************")
+            voltar = 1
+        elif opcoes == 6:
+            # Carregar e exibir eventos de pedidos
+            df_eventos = load_cliente_eventos()
+            if df_eventos is not None and not df_eventos.empty:
+                print("\n=== EVENTOS DE PEDIDOS (TRACKING) ===")
+                print(df_eventos.to_string(index=False))
+            else:
+                print("Nenhum evento de pedido encontrado.")
+            print("******************************")
+            voltar = 1
+        elif opcoes == 7:
+            # Carregar e exibir mensagens
+            df_mensagens = load_cliente_mensagens()
+            if df_mensagens is not None and not df_mensagens.empty:
+                print("\n=== MENSAGENS (CONFIRMAÇÕES/AVISOS) ===")
+                print(df_mensagens.to_string(index=False))
+            else:
+                print("Nenhuma mensagem encontrada.")
+            print("******************************")
+            voltar = 1
+        elif opcoes == 8:
             voltar = 0
         else:
-            print("Insira um número entre 1-5")
+            print("Insira um número entre 1-8")
             voltar = 1
         if voltar != 1:
             break

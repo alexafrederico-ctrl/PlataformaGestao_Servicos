@@ -1,3 +1,14 @@
+"""
+Portal Cliente - Refatorizado para trabalho de grupo
+Exporta dados em CSV: pedidos.csv, eventos_pedido.csv, mensagens.csv
+"""
+import os
+import pandas as pd
+from datetime import datetime
+
+# Diretório base para CSVs
+DATA_DIR = os.path.dirname(__file__)
+
 def apresentacaoProd(produtosNome, produtosPreco):
     print("Lista de Produtos")
     for i in range(0, len(produtosNome) - 1 + 1, 1):
@@ -80,6 +91,98 @@ def validacaoStock(produtosNome, produtosQtd, encomendas, produtosPreco, chamada
                 produtosQtd[i] = produtosQtd[i] - encomendas[i]
                 print(" - " + produtosNome[i] + " com a quantidade de " + str(encomendas[i]) + " e o preço de " + str(encomendas[i] * produtosPreco[i]))
 
+# ============= Persistência em CSV com Pandas =============
+def salvar_pedidos_csv(produtosNome, encomendas, produtosPreco, destinos, avaliacoes, t, td):
+    """
+    Salva pedidos realizados em pedidos.csv
+    Colunas: Produto, Quantidade, Preço_Unitário, Preço_Total, Destino, Avaliação, Data
+    """
+    dados_pedidos = []
+    for i in range(len(encomendas)):
+        if encomendas[i] > 0:
+            dados_pedidos.append({
+                'Produto': produtosNome[i],
+                'Quantidade': encomendas[i],
+                'Preço_Unitário': produtosPreco[i],
+                'Preço_Total': encomendas[i] * produtosPreco[i],
+                'Destino': destinos[min(td-1, len(destinos)-1)] if td > 0 else 'N/A',
+                'Avaliação': avaliacoes[min(t-1, len(avaliacoes)-1)] if t > 0 else 'N/A',
+                'Data': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
+    
+    if dados_pedidos:
+        df = pd.DataFrame(dados_pedidos)
+        csv_path = os.path.join(DATA_DIR, 'pedidos.csv')
+        if os.path.exists(csv_path):
+            df_existente = pd.read_csv(csv_path)
+            df = pd.concat([df_existente, df], ignore_index=True)
+        df.to_csv(csv_path, index=False, encoding='utf-8')
+        print(f"✓ Pedidos salvos em {csv_path}")
+
+def salvar_eventos_pedido_csv(produtosNome, encomendas, destinos, td):
+    """
+    Salva eventos/tracking de pedidos em eventos_pedido.csv
+    Colunas: Evento, Produto, Status, Destino, Timestamp
+    """
+    dados_eventos = []
+    for i in range(len(encomendas)):
+        if encomendas[i] > 0:
+            dados_eventos.append({
+                'Evento': 'Pedido Criado',
+                'Produto': produtosNome[i],
+                'Status': 'Confirmado',
+                'Destino': destinos[min(td-1, len(destinos)-1)] if td > 0 else 'N/A',
+                'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
+    
+    if dados_eventos:
+        df = pd.DataFrame(dados_eventos)
+        csv_path = os.path.join(DATA_DIR, 'eventos_pedido.csv')
+        if os.path.exists(csv_path):
+            df_existente = pd.read_csv(csv_path)
+            df = pd.concat([df_existente, df], ignore_index=True)
+        df.to_csv(csv_path, index=False, encoding='utf-8')
+        print(f"✓ Eventos salvos em {csv_path}")
+
+def salvar_mensagens_csv(mensagem_tipo, mensagem_texto):
+    """
+    Salva mensagens de confirmação/avisos em mensagens.csv
+    Colunas: Tipo, Mensagem, Timestamp
+    """
+    dados_msg = [{
+        'Tipo': mensagem_tipo,
+        'Mensagem': mensagem_texto,
+        'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }]
+    
+    df = pd.DataFrame(dados_msg)
+    csv_path = os.path.join(DATA_DIR, 'mensagens.csv')
+    if os.path.exists(csv_path):
+        df_existente = pd.read_csv(csv_path)
+        df = pd.concat([df_existente, df], ignore_index=True)
+    df.to_csv(csv_path, index=False, encoding='utf-8')
+
+def ler_pedidos_csv():
+    """Lê todos os pedidos salvos"""
+    csv_path = os.path.join(DATA_DIR, 'pedidos.csv')
+    if os.path.exists(csv_path):
+        return pd.read_csv(csv_path)
+    return pd.DataFrame()
+
+def ler_eventos_csv():
+    """Lê todos os eventos de tracking"""
+    csv_path = os.path.join(DATA_DIR, 'eventos_pedido.csv')
+    if os.path.exists(csv_path):
+        return pd.read_csv(csv_path)
+    return pd.DataFrame()
+
+def ler_mensagens_csv():
+    """Lê todas as mensagens"""
+    csv_path = os.path.join(DATA_DIR, 'mensagens.csv')
+    if os.path.exists(csv_path):
+        return pd.read_csv(csv_path)
+    return pd.DataFrame()
+
 # Main
 avaliacoes = [0] * (3)
 destinosOpcao = [""] * (3)
@@ -130,6 +233,12 @@ while True:    #This simulates a Do Loop
             ava = avaliacao()
             avaliacoes[t] = ava
             t = t + 1
+            
+            # Salvar dados em CSV
+            salvar_pedidos_csv(produtosNome, encomendas, produtosPreco, destinos, avaliacoes, t, td)
+            salvar_eventos_pedido_csv(produtosNome, encomendas, destinos, td)
+            salvar_mensagens_csv("Confirmação", f"Pedido confirmado para {destinos[td-1]} - Total: {total}€")
+            
             chamadaMenu = 1
         else:
             if opcao == 3:
