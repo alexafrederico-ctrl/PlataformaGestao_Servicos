@@ -152,6 +152,78 @@ def mENU():
     
     return opçoes
 # We'll merge portalCliente into this file and provide a top-level role menu.
+import os
+try:
+    import pandas as pd
+except Exception:
+    pd = None
+
+def _locate_csv(filename):
+    # Try multiple likely locations: cwd, script dir, repo root
+    candidates = []
+    cwd = os.getcwd()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.abspath(os.path.join(script_dir, '..'))
+    candidates.append(os.path.join(cwd, filename))
+    candidates.append(os.path.join(script_dir, filename))
+    candidates.append(os.path.join(repo_root, filename))
+    # also try two levels up
+    candidates.append(os.path.abspath(os.path.join(script_dir, '..', '..', filename)))
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    # fallback to cwd path (where a new file would be created)
+    return candidates[0]
+
+def listar_pedidos_csv():
+    if pd is None:
+        print('pandas não instalado. Instale com: pip install pandas')
+        return
+    path = _locate_csv('pedidos.csv')
+    if not os.path.exists(path):
+        print('Ficheiro pedidos.csv não encontrado em locais esperados.')
+        return
+    df = pd.read_csv(path)
+    if df.empty:
+        print('Sem pedidos gravados.')
+        return
+    # Show summary grouped by order_id
+    print('--- Pedidos (resumo) ---')
+    try:
+        display_cols = ['order_id', 'produto', 'quantidade', 'subtotal', 'destino', 'total', 'timestamp']
+        print(df[display_cols].to_string(index=False))
+    except Exception:
+        print(df.to_string(index=False))
+
+def listar_eventos_csv():
+    if pd is None:
+        print('pandas não instalado. Instale com: pip install pandas')
+        return
+    path = _locate_csv('eventos_pedido.csv')
+    if not os.path.exists(path):
+        print('Ficheiro eventos_pedido.csv não encontrado.')
+        return
+    df = pd.read_csv(path)
+    if df.empty:
+        print('Sem eventos gravados.')
+        return
+    print('--- Eventos de Pedidos ---')
+    print(df.to_string(index=False))
+
+def listar_mensagens_csv():
+    if pd is None:
+        print('pandas não instalado. Instale com: pip install pandas')
+        return
+    path = _locate_csv('mensagens.csv')
+    if not os.path.exists(path):
+        print('Ficheiro mensagens.csv não encontrado.')
+        return
+    df = pd.read_csv(path)
+    if df.empty:
+        print('Sem mensagens gravadas.')
+        return
+    print('--- Mensagens ---')
+    print(df.to_string(index=False))
 
 def init_inventario():
     # Shared product inventory (uses the larger set from gestor)
@@ -412,6 +484,9 @@ def gestor_menu():
     print("3 - Consultar estafetas disponíveis")
     print("4 - Consultar encomendas aprovadas")
     print("5 - Sair")
+    print("6 - Listar pedidos (pedidos.csv)")
+    print("7 - Listar eventos (eventos_pedido.csv)")
+    print("8 - Listar mensagens (mensagens.csv)")
     opcoes = int(input())
     return opcoes
 
@@ -467,6 +542,18 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
             voltar = 1
         elif opcoes == 5:
             voltar = 0
+        elif opcoes == 6:
+            listar_pedidos_csv()
+            print("******************************")
+            voltar = 1
+        elif opcoes == 7:
+            listar_eventos_csv()
+            print("******************************")
+            voltar = 1
+        elif opcoes == 8:
+            listar_mensagens_csv()
+            print("******************************")
+            voltar = 1
         else:
             print("Insira um número entre 1-5")
             voltar = 1
