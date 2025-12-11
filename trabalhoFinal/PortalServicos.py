@@ -1,3 +1,20 @@
+import os
+import pandas as pd
+from typing import Optional
+
+# Paths to client CSVs
+CLIENT_DIR = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais')
+PEDIDOS_CSV = os.path.join(CLIENT_DIR, 'pedidos.csv')
+EVENTOS_CSV = os.path.join(CLIENT_DIR, 'eventos_pedido.csv')
+MENSAGENS_CSV = os.path.join(CLIENT_DIR, 'mensagens.csv')
+MATERIALS_CSV = os.path.join(os.path.dirname(__file__), 'materials.csv')
+
+# Global DataFrames (cached in memory for quick access)
+DF_PEDIDOS = pd.DataFrame()
+DF_EVENTOS = pd.DataFrame()
+DF_MENSAGENS = pd.DataFrame()
+
+
 def consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonaEncomendas):
     i = 0
     while i <= 2:
@@ -194,83 +211,86 @@ def init_inventario():
 
     return produtosNome, produtosQtd, produtosPreco
 
-def load_materials_dataframe():
-    """
-    Load the `materials.csv` file (located next to this script) into a pandas DataFrame.
-
-    Returns:
-        pandas.DataFrame or list[dict]: DataFrame when pandas is available, otherwise a list
-        of dicts (CSV rows) as a fallback.
-    """
-    import os
-    import csv
-
-    csv_path = os.path.join(os.path.dirname(__file__), 'materials.csv')
+def _read_csv_if_exists(path: str) -> pd.DataFrame:
+    """Helper: read CSV into DataFrame or return empty DataFrame."""
     try:
-        import pandas as pd
-        df = pd.read_csv(csv_path)
-        return df
-    except ImportError:
-        # Fallback: read CSV with csv.DictReader and convert numeric fields
-        with open(csv_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            rows = []
-            for r in reader:
-                # Convert Quantity to int
-                try:
-                    r['Quantity'] = int(r.get('Quantity', 0))
-                except Exception:
-                    r['Quantity'] = 0
-                # Convert Price to float when possible
-                try:
-                    r['Price'] = float(r.get('Price', 0))
-                except Exception:
-                    r['Price'] = 0.0
-                rows.append(r)
-        print("pandas not installed; returning list of dicts. Install pandas with 'pip install pandas' to get a DataFrame.")
-        return rows
+        if os.path.exists(path):
+            return pd.read_csv(path)
+    except Exception as e:
+        print(f"Erro ao ler {path}: {e}")
+    return pd.DataFrame()
+
+
+def load_all_client_csvs() -> None:
+    """Load all client CSVs into module-level DataFrames (DF_PEDIDOS, DF_EVENTOS, DF_MENSAGENS)."""
+    global DF_PEDIDOS, DF_EVENTOS, DF_MENSAGENS
+    DF_PEDIDOS = _read_csv_if_exists(PEDIDOS_CSV)
+    DF_EVENTOS = _read_csv_if_exists(EVENTOS_CSV)
+    DF_MENSAGENS = _read_csv_if_exists(MENSAGENS_CSV)
+
+
+def load_pedidos() -> pd.DataFrame:
+    """Return pedidos DataFrame (loads from disk if not loaded)."""
+    global DF_PEDIDOS
+    if DF_PEDIDOS.empty:
+        load_all_client_csvs()
+    return DF_PEDIDOS
+
+
+def load_eventos() -> pd.DataFrame:
+    """Return eventos DataFrame (loads from disk if not loaded)."""
+    global DF_EVENTOS
+    if DF_EVENTOS.empty:
+        load_all_client_csvs()
+    return DF_EVENTOS
+
+
+def load_mensagens() -> pd.DataFrame:
+    """Return mensagens DataFrame (loads from disk if not loaded)."""
+    global DF_MENSAGENS
+    if DF_MENSAGENS.empty:
+        load_all_client_csvs()
+    return DF_MENSAGENS
+
 
 def load_cliente_pedidos():
-    """
-    Lê os pedidos salvos pelo PortalCliente (para sincronização)
-    """
-    try:
-        import pandas as pd
-        import os
-        cliente_path = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais', 'pedidos.csv')
-        if os.path.exists(cliente_path):
-            return pd.read_csv(cliente_path)
-    except:
-        pass
-    return None
+    """Backward-compatible wrapper used elsewhere in the file."""
+    return load_pedidos()
+
 
 def load_cliente_eventos():
-    """
-    Lê os eventos/tracking salvos pelo PortalCliente
-    """
-    try:
-        import pandas as pd
-        import os
-        cliente_path = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais', 'eventos_pedido.csv')
-        if os.path.exists(cliente_path):
-            return pd.read_csv(cliente_path)
-    except:
-        pass
-    return None
+    return load_eventos()
+
 
 def load_cliente_mensagens():
-    """
-    Lê as mensagens salvos pelo PortalCliente (confirmações/avisos)
+    return load_mensagens()
+
+
+def load_materials_dataframe():
+    """Load the `materials.csv` file (uses pandas)
+
+    Returns pandas.DataFrame or list[dict] (fallback parsed list).
     """
     try:
-        import pandas as pd
-        import os
-        cliente_path = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais', 'mensagens.csv')
-        if os.path.exists(cliente_path):
-            return pd.read_csv(cliente_path)
-    except:
-        pass
-    return None
+        return _read_csv_if_exists(MATERIALS_CSV)
+    except Exception:
+        # Fallback parsing without pandas
+        import csv
+        rows = []
+        if os.path.exists(MATERIALS_CSV):
+            with open(MATERIALS_CSV, newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for r in reader:
+                    try:
+                        r['Quantity'] = int(r.get('Quantity', 0))
+                    except Exception:
+                        r['Quantity'] = 0
+                    try:
+                        r['Price'] = float(r.get('Price', 0))
+                    except Exception:
+                        r['Price'] = 0.0
+                    rows.append(r)
+        return rows
 
 # ------------------ Cliente functions (adapted) ------------------
 def apresentacaoProd(produtosNome, produtosPreco):
@@ -529,6 +549,12 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
     print("Bem-vindo, qual o seu nome?")
     nome = input()
     while True:
+        # Refresh client CSVs each loop to keep data in sync with PortalCliente
+        try:
+            load_all_client_csvs()
+        except Exception:
+            # non-fatal: we'll handle missing/empty DataFrames later
+            pass
         opcoes = gestor_menu()
         if opcoes == 1:
             consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonaEncomendas, zonasAtendidas)
