@@ -9,6 +9,22 @@ EVENTOS_CSV = os.path.join(CLIENT_DIR, 'eventos_pedido.csv')
 MENSAGENS_CSV = os.path.join(CLIENT_DIR, 'mensagens.csv')
 MATERIALS_CSV = os.path.join(os.path.dirname(__file__), 'materials.csv')
 
+# Lazy import helper for PortalCliente to avoid import-time prompts
+def _get_portal_cliente_module():
+    """Attempt to import the PortalCliente module lazily.
+
+    This prevents PortalCliente top-level code (eg. input prompts) from
+    running at import time of PortalServicos. Returns the module or None.
+    """
+    try:
+        import sys as _sys, importlib as _importlib
+        _pc_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais'))
+        if _pc_path not in _sys.path:
+            _sys.path.insert(0, _pc_path)
+        return _importlib.import_module('PortalCliente')
+    except Exception:
+        return None
+
 # Global DataFrames (cached in memory for quick access)
 DF_PEDIDOS = pd.DataFrame()
 DF_EVENTOS = pd.DataFrame()
@@ -215,7 +231,12 @@ def _read_csv_if_exists(path: str) -> pd.DataFrame:
     """Helper: read CSV into DataFrame or return empty DataFrame."""
     try:
         if os.path.exists(path):
-            return pd.read_csv(path)
+            df = pd.read_csv(path)
+            # normalize ClienteID column if present: string, trimmed, fill unknown
+            if 'ClienteID' in df.columns:
+                df['ClienteID'] = df['ClienteID'].fillna('').astype(str).str.strip()
+                df.loc[df['ClienteID'] == '', 'ClienteID'] = 'unknown'
+            return df
     except Exception as e:
         print(f"Erro ao ler {path}: {e}")
     return pd.DataFrame()
@@ -383,6 +404,11 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
     t = 0
 
     print("PORTAL DO CLIENTE")
+    # Perguntar pelo ID do cliente para filtrar pedidos posteriormente
+    try:
+        CLIENT_ID = input("Insira o seu ID de cliente: ").strip()
+    except Exception:
+        CLIENT_ID = None
     while True:
         opcao = cliente_menu()
         if opcao == 1:
@@ -404,9 +430,51 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
             if t < len(avaliacoes):
                 avaliacoes[t] = ava
                 t = t + 1
+            # If PortalCliente helpers are available, import lazily, set CLIENT_ID and call save routines
+            try:
+                pc = _get_portal_cliente_module()
+                if pc is not None:
+                    try:
+                        pc.CLIENT_ID = CLIENT_ID
+                    except Exception:
+                        pass
+                    try:
+                        pc.salvar_pedidos_csv(produtosNome, encomendas, produtosPreco, destinos, avaliacoes, t, td)
+                    except Exception:
+                        pass
+                    try:
+                        pc.salvar_eventos_pedido_csv(produtosNome, encomendas, destinos, td)
+                    except Exception:
+                        pass
+                    try:
+                        pc.salvar_mensagens_csv("Confirmação", f"Pedido confirmado para {destinos[td-1]} - Total: {total}€")
+                    except Exception:
+                        pass
+                    # refresh in-memory caches
+                    try:
+                        load_all_client_csvs()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
             chamadaMenu = 1
         elif opcao == 3:
-            consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
+            # Mostrar apenas pedidos deste cliente, se a coluna ClienteID existir
+            try:
+                df_pedidos = load_cliente_pedidos()
+                if df_pedidos is not None and not df_pedidos.empty and CLIENT_ID is not None and 'ClienteID' in df_pedidos.columns:
+                    df_pedidos['ClienteID'] = df_pedidos['ClienteID'].fillna('').astype(str).str.strip()
+                    df_my = df_pedidos.loc[df_pedidos['ClienteID'] == CLIENT_ID]
+                    if not df_my.empty:
+                        print("\n=== ENCOMENDAS ===")
+                        print(df_my.to_string(index=False))
+                    else:
+                        print("Nenhuma encomenda encontrada para o seu ID.")
+                else:
+                    # fallback: mostrar pedidos da sessão
+                    consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
+            except Exception:
+                consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
             chamadaMenu = 1
         elif opcao == 4:
             chamadaMenu = 0

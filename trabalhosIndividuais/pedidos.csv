@@ -1,6 +1,8 @@
 ClienteID,Produto,Quantidade,Preço_Unitário,Preço_Total,Destino,Avaliação,Data
-1,Parafusos,2.0,1.6,3.2,Fafe,2,2025-12-09 15:28:24
-1,Parafusos,2.0,1.6,3.2,Fafe,2,2025-12-09 15:38:04
-1,Parafusos,2.0,1.6,3.2,Guimarães,2,2025-12-11 11:05:13
+unknown,Parafusos,2.0,1.6,3.2,Fafe,2,2025-12-09 15:28:24
+unknown,Parafusos,2.0,1.6,3.2,Fafe,2,2025-12-09 15:38:04
+unknown,Parafusos,2.0,1.6,3.2,Guimarães,2,2025-12-11 11:05:13
 2,Tintas,2.0,11.0,22.0,Fafe,3,2025-12-11 11:42:09
 2,Parafusos,2.0,1.6,3.2,Fafe,2,2025-12-11 12:29:55
+2,Martelos,3.0,5.0,15.0,Guimarães,3,2025-12-17 19:47:21
+6,Nivelador,6.0,23.0,138.0,Guimarães,3,2025-12-17 19:48:32

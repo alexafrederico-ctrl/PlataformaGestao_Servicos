@@ -198,10 +198,12 @@ def salvar_eventos_pedido_csv(produtosNome, encomendas, destinos, td):
     Salva eventos/tracking de pedidos em eventos_pedido.csv
     Colunas: Evento, Produto, Status, Destino, Timestamp
     """
+    cid = '' if CLIENT_ID is None else str(CLIENT_ID).strip()
     dados_eventos = []
     for i in range(len(encomendas)):
         if encomendas[i] > 0:
             dados_eventos.append({
+                'ClienteID': cid,
                 'Evento': 'Pedido Criado',
                 'Produto': produtosNome[i],
                 'Status': 'Confirmado',
@@ -249,12 +251,14 @@ def salvar_mensagens_csv(mensagem_tipo, mensagem_texto):
     Salva mensagens de confirmação/avisos em mensagens.csv
     Colunas: Tipo, Mensagem, Timestamp
     """
+    cid = '' if CLIENT_ID is None else str(CLIENT_ID).strip()
     dados_msg = [{
+        'ClienteID': cid,
         'Tipo': mensagem_tipo,
         'Mensagem': mensagem_texto,
         'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }]
-    
+
     df_new = pd.DataFrame(dados_msg)
     # Update in-memory PortalServicos DF_MENSAGENS if available
     try:
@@ -303,14 +307,20 @@ def ler_eventos_csv():
     """Lê todos os eventos de tracking"""
     csv_path = EVENTOS_CSV
     if os.path.exists(csv_path):
-        return pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path)
+        if 'ClienteID' in df.columns:
+            df['ClienteID'] = df['ClienteID'].fillna('').astype(str).str.strip()
+        return df
     return pd.DataFrame()
 
 def ler_mensagens_csv():
     """Lê todas as mensagens"""
     csv_path = MENSAGENS_CSV
     if os.path.exists(csv_path):
-        return pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path)
+        if 'ClienteID' in df.columns:
+            df['ClienteID'] = df['ClienteID'].fillna('').astype(str).str.strip()
+        return df
     return pd.DataFrame()
 
 # Main (globals defined at module top; assign initial values)
@@ -328,63 +338,80 @@ produtosPreco[1] = 1.6
 produtosPreco[2] = 5
 
 # t = indice de Avaliação( 1, 2 ou 3)
-print("PORTAL DO CLIENTE")
-# Perguntar pelo ID do cliente e guardar para filtragem de pedidos
-try:
-    CLIENT_ID = input("Insira o seu ID de cliente: ").strip()
-except Exception:
-    CLIENT_ID = None
-for i in range(0, len(encomendas) - 1 + 1, 1):
-    encomendas[i] = 0
-while True:    #This simulates a Do Loop
-    opcao = menu()
-    if opcao == 1:
-        consultaStock(produtosNome, produtosQtd, produtosPreco)
-        chamadaMenu = 1
-    elif opcao == 2:
-        print("Qual o produto que escolhe?")
-        criacaoPedido(produtosNome, encomendas, produtosPreco)
-        print("Lista de produtos encomendados:")
-        validacaoStock(produtosNome, produtosQtd, encomendas, produtosPreco, chamadaMenu)
-        print("Indique o destino da encomenda: ")
-        escolha = escolherDestino(destinosOpcao)
-        destinos[td] = destinosOpcao[escolha - 1]
-        td = td + 1
-        total = calcTotal(encomendas, produtosPreco)
-        print("Obrigado pela a encomenda" + " O total da encomenda é " + str(total) + " eur")
-        print("Avalie o seu pedido")
-        ava = avaliacao()
-        avaliacoes[t] = ava
-        t = t + 1
 
-        # Salvar dados em CSV
-        salvar_pedidos_csv(produtosNome, encomendas, produtosPreco, destinos, avaliacoes, t, td)
-        salvar_eventos_pedido_csv(produtosNome, encomendas, destinos, td)
-        salvar_mensagens_csv("Confirmação", f"Pedido confirmado para {destinos[td-1]} - Total: {total}€")
 
-        chamadaMenu = 1
-    elif opcao == 3:
-        # Mostrar apenas pedidos deste cliente usando DataFrame.loc
-        try:
-            df_pedidos = ler_pedidos_csv()
-            if not df_pedidos.empty and CLIENT_ID is not None and 'ClienteID' in df_pedidos.columns:
-                df_my = df_pedidos.loc[df_pedidos['ClienteID'] == CLIENT_ID]
-                if not df_my.empty:
-                    print("\n=== SUAS ENCOMENDAS ===")
-                    print(df_my.to_string(index=False))
+def cliente_main():
+    """Interactive client portal loop.
+
+    Asks for CLIENT_ID at the start of the session and re-asks when the user
+    chooses the exit option. This function does not run on import.
+    """
+    global CLIENT_ID, chamadaMenu, td, t, encomendas
+
+    print("PORTAL DO CLIENTE")
+    # Perguntar pelo ID do cliente e guardar para filtragem de pedidos
+    try:
+        CLIENT_ID = input("Insira o seu ID de cliente: ").strip()
+    except Exception:
+        CLIENT_ID = None
+
+    for i in range(0, len(encomendas) - 1 + 1, 1):
+        encomendas[i] = 0
+    while True:    #This simulates a Do Loop
+        opcao = menu()
+        if opcao == 1:
+            consultaStock(produtosNome, produtosQtd, produtosPreco)
+            chamadaMenu = 1
+        elif opcao == 2:
+            print("Qual o produto que escolhe?")
+            criacaoPedido(produtosNome, encomendas, produtosPreco)
+            print("Lista de produtos encomendados:")
+            validacaoStock(produtosNome, produtosQtd, encomendas, produtosPreco, chamadaMenu)
+            print("Indique o destino da encomenda: ")
+            escolha = escolherDestino(destinosOpcao)
+            destinos[td] = destinosOpcao[escolha - 1]
+            td = td + 1
+            total = calcTotal(encomendas, produtosPreco)
+            print("Obrigado pela a encomenda" + " O total da encomenda é " + str(total) + " eur")
+            print("Avalie o seu pedido")
+            ava = avaliacao()
+            # guardamos avaliação apenas se houver espaço
+            if t < len(avaliacoes):
+                avaliacoes[t] = ava
+            t = t + 1
+
+            # Salvar dados em CSV
+            salvar_pedidos_csv(produtosNome, encomendas, produtosPreco, destinos, avaliacoes, t, td)
+            salvar_eventos_pedido_csv(produtosNome, encomendas, destinos, td)
+            salvar_mensagens_csv("Confirmação", f"Pedido confirmado para {destinos[td-1]} - Total: {total}€")
+
+            chamadaMenu = 1
+        elif opcao == 3:
+            # Mostrar apenas pedidos deste cliente usando DataFrame.loc
+            try:
+                df_pedidos = ler_pedidos_csv()
+                if not df_pedidos.empty and CLIENT_ID is not None and 'ClienteID' in df_pedidos.columns:
+                    df_my = df_pedidos.loc[df_pedidos['ClienteID'] == CLIENT_ID]
+                    if not df_my.empty:
+                        print("\n=== SUAS ENCOMENDAS ===")
+                        print(df_my.to_string(index=False))
+                    else:
+                        print("Nenhuma encomenda encontrada para o seu ID.")
                 else:
-                    print("Nenhuma encomenda encontrada para o seu ID.")
-            else:
-                # fallback to session data view
+                    # fallback to session data view
+                    consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
+            except Exception:
                 consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
-        except Exception:
-            consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
-        chamadaMenu = 1
-    elif opcao == 4:
-        chamadaMenu = 0
-    else:
-        print("Opção inválida")
-        chamadaMenu = 1
-    if chamadaMenu != 1:
-        break
-print("Continuação de um ótimo dia")
+            chamadaMenu = 1
+        elif opcao == 4:
+            chamadaMenu = 0
+        else:
+            print("Opção inválida")
+            chamadaMenu = 1
+        if chamadaMenu != 1:
+            break
+    print("Continuação de um ótimo dia")
+
+
+if __name__ == '__main__':
+    cliente_main()

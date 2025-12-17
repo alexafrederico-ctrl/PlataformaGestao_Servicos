@@ -1,6 +1,8 @@
-Tipo,Mensagem,Timestamp
-Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2025-12-09 15:28:24
-Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2025-12-09 15:38:04
-Confirmação,Pedido confirmado para Guimarães - Total: 3.2€,2025-12-11 11:05:13
-Confirmação,Pedido confirmado para Fafe - Total: 22.0€,2025-12-11 11:42:09
-Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2025-12-11 12:29:55
+ClienteID,Tipo,Mensagem,Timestamp
+unknown,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2025-12-09 15:28:24
+unknown,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2025-12-09 15:38:04
+unknown,Confirmação,Pedido confirmado para Guimarães - Total: 3.2€,2025-12-11 11:05:13
+unknown,Confirmação,Pedido confirmado para Fafe - Total: 22.0€,2025-12-11 11:42:09
+unknown,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2025-12-11 12:29:55
+2,Confirmação,Pedido confirmado para Guimarães - Total: 15.0€,2025-12-17 19:47:21
+6,Confirmação,Pedido confirmado para Guimarães - Total: 138.0€,2025-12-17 19:48:32
