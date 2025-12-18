@@ -7,3 +7,25 @@ unknown,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2025-12-11 12:
 2,Confirmação,Pedido confirmado para Guimarães - Total: 15.0€,2025-12-17 19:47:21
 6,Confirmação,Pedido confirmado para Guimarães - Total: 138.0€,2025-12-17 19:48:32
 6,Confirmação,Pedido confirmado para Braga - Total: 21.0€,2025-12-18 12:06:44
+cliente_teste_001,Atualização de Estado,Pedido cliente_teste_001_20251218225740: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 50€,2025-12-18 22:57:40
+cliente_teste_001,Atualização de Estado,Pedido cliente_teste_001_20251218225740: Estado alterado de 'Confirmado' para 'Aprovado' - Pedido aprovado pelo gestor,2025-12-18 22:57:40
+cliente_teste_001,Atualização de Estado,Pedido cliente_teste_001_20251218225740: Estado alterado de 'Aprovado' para 'Em Processamento' - Começou o processamento,2025-12-18 22:57:40
+2,Atualização de Estado,Pedido 2_20251218230300: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 11.0€,2025-12-18 23:03:00
+2,Confirmação,Pedido confirmado para Fafe - Total: 11.0€,2025-12-18 23:03:00
+2,Atualização de Estado,Pedido 2: Estado alterado de 'Desconhecido' para 'Entregue' - O cliente acabou de receber em casa.,2025-12-18 23:06:53
+5,Atualização de Estado,Pedido 5_20251218230844: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 11.0€,2025-12-18 23:08:44
+5,Confirmação,Pedido confirmado para Braga - Total: 11.0€,2025-12-18 23:08:44
+7,Atualização de Estado,Pedido 7_20251218231147: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2025-12-18 23:11:47
+7,Confirmação,Pedido confirmado para Guimarães - Total: 3.2€,2025-12-18 23:11:47
+3,Atualização de Estado,Pedido 3_20251218231423: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 5.0€,2025-12-18 23:14:23
+3,Confirmação,Pedido confirmado para Braga - Total: 5.0€,2025-12-18 23:14:23
+5,Atualização de Estado,Pedido 3: Estado alterado de 'Desconhecido' para 'Em Distribuição' - Foi entregue á transportadora,2025-12-18 23:16:42
+11,Atualização de Estado,Pedido 11_20251218233344: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 11.0€,2025-12-18 23:33:44
+11,Confirmação,Pedido confirmado para Braga - Total: 11.0€,2025-12-18 23:33:44
+11,Atualização de Estado,Pedido 10: Estado alterado de 'Desconhecido' para 'Aprovado' - fefv,2025-12-18 23:34:28
+12,Atualização de Estado,Pedido 12_20251218233917: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 11.0€,2025-12-18 23:39:17
+12,Confirmação,Pedido confirmado para Braga - Total: 11.0€,2025-12-18 23:39:17
+gestor,Atualização de Estado,Pedido 12: Estado alterado de 'Desconhecido' para 'Em Distribuição' - Foi entregue á transportadora,2025-12-18 23:40:27
+111,Atualização de Estado,Pedido 111_20251218235012: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2025-12-18 23:50:12
+111,Confirmação,Pedido confirmado para Braga - Total: 22.0€,2025-12-18 23:50:12
+gestor,Atualização de Estado,Pedido 111: Estado alterado de 'Desconhecido' para 'Em Distribuição' - foi entregue á transportadora,2025-12-18 23:50:41

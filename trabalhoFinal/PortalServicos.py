@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from typing import Optional
+from datetime import datetime
 
 # Paths to client CSVs
 CLIENT_DIR = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais')
@@ -8,6 +9,18 @@ PEDIDOS_CSV = os.path.join(CLIENT_DIR, 'pedidos.csv')
 EVENTOS_CSV = os.path.join(CLIENT_DIR, 'eventos_pedido.csv')
 MENSAGENS_CSV = os.path.join(CLIENT_DIR, 'mensagens.csv')
 MATERIALS_CSV = os.path.join(os.path.dirname(__file__), 'materials.csv')
+
+# Estados possíveis para tracking
+ESTADOS_PEDIDO = [
+    'Criado',
+    'Confirmado',
+    'Aprovado',
+    'Em Processamento',
+    'Em Distribuição',
+    'Entregue',
+    'Falhado',
+    'Cancelado'
+]
 
 # Lazy import helper for PortalCliente to avoid import-time prompts
 def _get_portal_cliente_module():
@@ -313,6 +326,192 @@ def load_materials_dataframe():
                     rows.append(r)
         return rows
 
+
+# ============= SISTEMA DE tracking EM TEMPO REAL =============
+def criar_evento_pedido(pedido_id: str, novo_estado: str, cliente_id: str, descricao: str = "") -> dict:
+    """
+    Cria um novo evento de tracking para um pedido.
+    
+    Args:
+        pedido_id: Identificador único do pedido
+        novo_estado: Um dos estados definidos em ESTADOS_PEDIDO
+        cliente_id: ID do cliente
+        descricao: Descrição opcional do evento
+    
+    Returns:
+        dict com dados do evento criado
+    """
+    if novo_estado not in ESTADOS_PEDIDO:
+        print(f"⚠ Estado '{novo_estado}' não reconhecido. Estados válidos: {ESTADOS_PEDIDO}")
+        novo_estado = 'Criado'
+    
+    evento = {
+        'PedidoID': pedido_id,
+        'ClienteID': str(cliente_id).strip() if cliente_id else 'unknown',
+        'Estado': novo_estado,
+        'Descricao': descricao,
+        'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+    
+    return evento
+
+
+def registar_evento_pedido(evento: dict) -> None:
+    """
+    Registra um evento de tracking no CSV de eventos.
+    Cada mudança de estado cria uma entrada nova.
+    
+    Args:
+        evento: dict com dados do evento
+    """
+    global DF_EVENTOS
+    
+    try:
+        # Criar DataFrame com o novo evento
+        df_novo = pd.DataFrame([evento])
+        
+        # Carregar eventos existentes
+        df_existentes = load_eventos()
+        
+        # Concatenar
+        if df_existentes.empty:
+            df_final = df_novo
+        else:
+            df_final = pd.concat([df_existentes, df_novo], ignore_index=True)
+        
+        # Salvar em arquivo
+        os.makedirs(os.path.dirname(EVENTOS_CSV) or '.', exist_ok=True)
+        df_final.to_csv(EVENTOS_CSV, index=False, encoding='utf-8')
+        
+        # Atualizar cache global
+        DF_EVENTOS = df_final
+        
+        print(f"✓ Evento registado: {evento['Estado']} para pedido {evento['PedidoID']}")
+        
+    except Exception as e:
+        print(f"✗ Erro ao registar evento: {e}")
+
+
+def obter_estado_atual_pedido(pedido_id: str) -> str:
+    """
+    Obtém o estado atual de um pedido (último evento registado).
+    
+    Args:
+        pedido_id: Identificador do pedido
+    
+    Returns:
+        string com o estado atual ou 'Desconhecido' se não encontrado
+    """
+    df_eventos = load_eventos()
+    
+    if df_eventos.empty:
+        return 'Desconhecido'
+    
+    # Filtrar eventos do pedido
+    pedido_eventos = df_eventos[df_eventos['PedidoID'] == pedido_id]
+    
+    if pedido_eventos.empty:
+        return 'Desconhecido'
+    
+    # Retornar o último evento (índice mais elevado)
+    ultimo_evento = pedido_eventos.iloc[-1]
+    return ultimo_evento['Estado']
+
+
+def obter_historico_pedido(pedido_id: str) -> pd.DataFrame:
+    """
+    Obtém o histórico completo de tracking de um pedido.
+    
+    Args:
+        pedido_id: Identificador do pedido
+    
+    Returns:
+        DataFrame com todos os eventos do pedido ordenados por timestamp
+    """
+    df_eventos = load_eventos()
+    
+    if df_eventos.empty:
+        return pd.DataFrame()
+    
+    pedido_eventos = df_eventos[df_eventos['PedidoID'] == pedido_id]
+    
+    # Ordenar por timestamp
+    if not pedido_eventos.empty:
+        pedido_eventos = pedido_eventos.sort_values('Timestamp', ascending=True)
+    
+    return pedido_eventos
+
+
+def alterar_estado_pedido(pedido_id: str, novo_estado: str, cliente_id: str, descricao: str = "") -> bool:
+    """
+    Altera o estado de um pedido criando um novo evento.
+    
+    Args:
+        pedido_id: Identificador do pedido
+        novo_estado: Novo estado para o pedido
+        cliente_id: ID do cliente
+        descricao: Descrição da alteração
+    
+    Returns:
+        True se alteração foi bem-sucedida, False caso contrário
+    """
+    try:
+        estado_anterior = obter_estado_atual_pedido(pedido_id)
+        
+        # Criar novo evento
+        evento = criar_evento_pedido(pedido_id, novo_estado, cliente_id, descricao)
+        
+        # Registar evento (automaticamente atualiza CSV)
+        registar_evento_pedido(evento)
+        
+        # Registar mensagem de mudança de estado
+        mensagem = f"Pedido {pedido_id}: Estado alterado de '{estado_anterior}' para '{novo_estado}'"
+        if descricao:
+            mensagem += f" - {descricao}"
+        salvar_mensagem_tracking(cliente_id, 'Atualização de Estado', mensagem)
+        
+        return True
+        
+    except Exception as e:
+        print(f"✗ Erro ao alterar estado: {e}")
+        return False
+
+
+def salvar_mensagem_tracking(cliente_id: str, tipo: str, mensagem: str) -> None:
+    """
+    Salva uma mensagem de tracking (confirmações, avisos, etc).
+    
+    Args:
+        cliente_id: ID do cliente
+        tipo: Tipo de mensagem (ex: 'Atualização de Estado', 'Confirmação', 'Aviso')
+        mensagem: Texto da mensagem
+    """
+    global DF_MENSAGENS
+    
+    try:
+        msg_dict = {
+            'ClienteID': str(cliente_id).strip() if cliente_id else 'unknown',
+            'Tipo': tipo,
+            'Mensagem': mensagem,
+            'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        df_novo = pd.DataFrame([msg_dict])
+        df_existentes = load_mensagens()
+        
+        if df_existentes.empty:
+            df_final = df_novo
+        else:
+            df_final = pd.concat([df_existentes, df_novo], ignore_index=True)
+        
+        os.makedirs(os.path.dirname(MENSAGENS_CSV) or '.', exist_ok=True)
+        df_final.to_csv(MENSAGENS_CSV, index=False, encoding='utf-8')
+        
+        DF_MENSAGENS = df_final
+        
+    except Exception as e:
+        print(f"✗ Erro ao salvar mensagem: {e}")
+
 # ------------------ Cliente functions (adapted) ------------------
 def apresentacaoProd(produtosNome, produtosPreco):
     print("Lista de Produtos")
@@ -409,6 +608,7 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
         CLIENT_ID = input("Insira o seu ID de cliente: ").strip()
     except Exception:
         CLIENT_ID = None
+    
     while True:
         opcao = cliente_menu()
         if opcao == 1:
@@ -430,6 +630,28 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
             if t < len(avaliacoes):
                 avaliacoes[t] = ava
                 t = t + 1
+            
+            # ===== tracking EM TEMPO REAL =====
+            # Gerar ID único para o pedido
+            pedido_id = f"{CLIENT_ID}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+            
+            # Registar primeiro evento: Pedido Criado
+            evento_criacao = criar_evento_pedido(
+                pedido_id, 
+                'Criado', 
+                CLIENT_ID,
+                f"Pedido criado com {sum(1 for e in encomendas if e > 0)} produtos para {destinos[td-1]}"
+            )
+            registar_evento_pedido(evento_criacao)
+            
+            # Confirmar pedido
+            alterar_estado_pedido(
+                pedido_id,
+                'Confirmado',
+                CLIENT_ID,
+                f"Pedido confirmado. Total: {total}€"
+            )
+            
             # If PortalCliente helpers are available, import lazily, set CLIENT_ID and call save routines
             try:
                 pc = _get_portal_cliente_module()
@@ -468,12 +690,37 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
                     if not df_my.empty:
                         print("\n=== ENCOMENDAS ===")
                         print(df_my.to_string(index=False))
+                        
+                        # Mostrar Tracking em tempo real
+                        df_eventos = load_eventos()
+                        if not df_eventos.empty and CLIENT_ID:
+                            df_eventos_cliente = df_eventos[df_eventos['ClienteID'] == CLIENT_ID]
+                            if not df_eventos_cliente.empty:
+                                print("\n=== Tracking EM TEMPO REAL ===")
+                                for _, evento in df_eventos_cliente.iterrows():
+                                    ts = str(evento.get('Timestamp', ''))
+                                    est = str(evento.get('Estado', ''))
+                                    desc = str(evento.get('Descricao', ''))
+                                    print(f"  • {ts} → {est:20s} ({desc[:50]})")
+                                
+                                # Mostrar estado atual
+                                if 'PedidoID' in df_eventos_cliente.columns:
+                                    pedidos_unicos = df_eventos_cliente['PedidoID'].unique()
+                                    print("\n  ➤ ESTADO ATUAL:")
+                                    for pid in pedidos_unicos:
+                                        estado = obter_estado_atual_pedido(pid)
+                                        print(f"    {pid}: {estado}")
+                                    
+                                    # Clientes apenas consultam o tracking; alterações são feitas pelo gestor
+                            else:
+                                print("\n  Sem eventos de Tracking ainda.")
                     else:
                         print("Nenhuma encomenda encontrada para o seu ID.")
                 else:
                     # fallback: mostrar pedidos da sessão
                     consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
-            except Exception:
+            except Exception as e:
+                print(f"Erro ao consultar pedidos: {e}")
                 consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
             chamadaMenu = 1
         elif opcao == 4:
@@ -580,7 +827,9 @@ def gestor_menu():
     print("5 - Consultar pedidos do cliente (CSV)")
     print("6 - Consultar eventos de pedidos (tracking)")
     print("7 - Consultar mensagens (confirmações/avisos)")
-    print("8 - Sair")
+    print("8 - Alterar estado de um pedido")
+    print("9 - Ver histórico de um pedido")
+    print("10 - Sair")
     opcoes = int(input())
     return opcoes
 
@@ -655,9 +904,14 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
             df_eventos = load_cliente_eventos()
             if df_eventos is not None and not df_eventos.empty:
                 print("\n=== EVENTOS DE PEDIDOS (TRACKING) ===")
-                print(df_eventos.to_string(index=False))
+                for _, evento in df_eventos.iterrows():
+                    pid = str(evento.get('PedidoID', 'N/A'))[-15:]
+                    est = str(evento.get('Estado', 'N/A'))
+                    ts = str(evento.get('Timestamp', 'N/A'))
+                    desc = str(evento.get('Descricao', ''))[:35]
+                    print(f"  {pid:15s} | {est:20s} | {ts} | {desc}")
             else:
-                print("Nenhum evento de pedido encontrado.")
+                print("✗ Nenhum evento de pedido encontrado.")
             print("******************************")
             voltar = 1
         elif opcoes == 7:
@@ -671,9 +925,75 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
             print("******************************")
             voltar = 1
         elif opcoes == 8:
+            # Alterar estado de um pedido
+            print("\n=== ALTERAR ESTADO DE PEDIDO ===")
+            pedido_id = input("Insira o ID do pedido: ").strip()
+            
+            print("Estados disponíveis:")
+            for i, estado in enumerate(ESTADOS_PEDIDO, 1):
+                print(f"{i} - {estado}")
+            
+            opcao_estado = int(input("Escolha o novo estado: ")) - 1
+            
+            if 0 <= opcao_estado < len(ESTADOS_PEDIDO):
+                novo_estado = ESTADOS_PEDIDO[opcao_estado]
+                descricao = input("Descrição da alteração (opcional): ").strip()
+                
+                # Obter cliente_id do pedido (procurar nos eventos ou pedidos); usar 'gestor' como fallback
+                cliente_id = "gestor"
+                try:
+                    # Primeiro tentar encontrar nos eventos existentes
+                    df_eventos = load_eventos()
+                    if df_eventos is not None and not df_eventos.empty and 'PedidoID' in df_eventos.columns:
+                        evs = df_eventos[df_eventos['PedidoID'] == pedido_id]
+                        if not evs.empty:
+                            cliente_id = str(evs.iloc[0].get('ClienteID', cliente_id)).strip() or cliente_id
+                    # Se não encontrado, tentar nos pedidos
+                    if cliente_id == "gestor":
+                        df_pedidos = load_cliente_pedidos()
+                        if df_pedidos is not None and not df_pedidos.empty and 'PedidoID' in df_pedidos.columns:
+                            row = df_pedidos[df_pedidos['PedidoID'] == pedido_id]
+                            if not row.empty:
+                                cliente_id = str(row.iloc[0].get('ClienteID', cliente_id)).strip() or cliente_id
+                except Exception:
+                    cliente_id = "gestor"
+
+                sucesso = alterar_estado_pedido(pedido_id, novo_estado, cliente_id, descricao)
+                if sucesso:
+                    print(f"✓ Estado do pedido {pedido_id} alterado para '{novo_estado}'")
+                else:
+                    print(f"✗ Erro ao alterar estado do pedido")
+            else:
+                print("Opção inválida.")
+            print("******************************")
+            voltar = 1
+        elif opcoes == 9:
+            # Ver histórico completo de um pedido
+            print("\n=== HISTÓRICO DE Tracking ===")
+            pedido_id = input("Insira o ID do pedido: ").strip()
+            
+            df_historico = obter_historico_pedido(pedido_id)
+            
+            if not df_historico.empty:
+                print(f"\nPedido: {pedido_id}")
+                print("-" * 70)
+                for _, evento in df_historico.iterrows():
+                    ts = str(evento.get('Timestamp', ''))
+                    est = str(evento.get('Estado', ''))
+                    desc = str(evento.get('Descricao', ''))
+                    print(f"{ts} | {est:20s} | {desc}")
+                print("-" * 70)
+                
+                estado_atual = obter_estado_atual_pedido(pedido_id)
+                print(f"\n➤ Estado Atual: {estado_atual}")
+            else:
+                print(f"✗ Nenhum evento encontrado para o pedido {pedido_id}")
+            print("******************************")
+            voltar = 1
+        elif opcoes == 10:
             voltar = 0
         else:
-            print("Insira um número entre 1-8")
+            print("Insira um número entre 1-10")
             voltar = 1
         if voltar != 1:
             break

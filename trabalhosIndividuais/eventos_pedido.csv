@@ -1,9 +1,39 @@
-ClienteID,Evento,Produto,Status,Destino,Timestamp
-unknown,Pedido Criado,Parafusos,Confirmado,Fafe,2025-12-09 15:28:24
-unknown,Pedido Criado,Parafusos,Confirmado,Fafe,2025-12-09 15:38:04
-unknown,Pedido Criado,Parafusos,Confirmado,Guimarães,2025-12-11 11:05:13
-unknown,Pedido Criado,Tintas,Confirmado,Fafe,2025-12-11 11:42:09
-unknown,Pedido Criado,Parafusos,Confirmado,Fafe,2025-12-11 12:29:55
-2,Pedido Criado,Martelos,Confirmado,Guimarães,2025-12-17 19:47:21
-6,Pedido Criado,Nivelador,Confirmado,Guimarães,2025-12-17 19:48:32
-6,Pedido Criado,Serra,Confirmado,Braga,2025-12-18 12:06:44
+ClienteID,Evento,Produto,Status,Destino,Timestamp,PedidoID,Estado,Descricao
+unknown,Pedido Criado,Parafusos,Confirmado,Fafe,2025-12-09 15:28:24,,,
+unknown,Pedido Criado,Parafusos,Confirmado,Fafe,2025-12-09 15:38:04,,,
+unknown,Pedido Criado,Parafusos,Confirmado,Guimarães,2025-12-11 11:05:13,,,
+unknown,Pedido Criado,Tintas,Confirmado,Fafe,2025-12-11 11:42:09,,,
+unknown,Pedido Criado,Parafusos,Confirmado,Fafe,2025-12-11 12:29:55,,,
+2,Pedido Criado,Martelos,Confirmado,Guimarães,2025-12-17 19:47:21,,,
+6,Pedido Criado,Nivelador,Confirmado,Guimarães,2025-12-17 19:48:32,,,
+6,Pedido Criado,Serra,Confirmado,Braga,2025-12-18 12:06:44,,,
+cliente_teste_001,,,,,2025-12-18 22:57:40,cliente_teste_001_20251218225740,Criado,Pedido criado com 3 produtos para Braga
+cliente_teste_001,,,,,2025-12-18 22:57:40,cliente_teste_001_20251218225740,Confirmado,Pedido confirmado. Total: 50€
+cliente_teste_001,,,,,2025-12-18 22:57:40,cliente_teste_001_20251218225740,Aprovado,Pedido aprovado pelo gestor
+cliente_teste_001,,,,,2025-12-18 22:57:40,cliente_teste_001_20251218225740,Em Processamento,Começou o processamento
+2,,,,,2025-12-18 23:03:00,2_20251218230300,Criado,Pedido criado com 1 produtos para Fafe
+2,,,,,2025-12-18 23:03:00,2_20251218230300,Confirmado,Pedido confirmado. Total: 11.0€
+2,Pedido Criado,Tintas,Confirmado,Fafe,2025-12-18 23:03:00,,,
+2,,,,,2025-12-18 23:06:53,2,Entregue,O cliente acabou de receber em casa.
+5,,,,,2025-12-18 23:08:44,5_20251218230844,Criado,Pedido criado com 1 produtos para Braga
+5,,,,,2025-12-18 23:08:44,5_20251218230844,Confirmado,Pedido confirmado. Total: 11.0€
+5,Pedido Criado,Tintas,Confirmado,Braga,2025-12-18 23:08:44,,,
+7,,,,,2025-12-18 23:11:47,7_20251218231147,Criado,Pedido criado com 1 produtos para Guimarães
+7,,,,,2025-12-18 23:11:47,7_20251218231147,Confirmado,Pedido confirmado. Total: 3.2€
+7,Pedido Criado,Parafusos,Confirmado,Guimarães,2025-12-18 23:11:47,,,
+3,,,,,2025-12-18 23:14:23,3_20251218231423,Criado,Pedido criado com 1 produtos para Braga
+3,,,,,2025-12-18 23:14:23,3_20251218231423,Confirmado,Pedido confirmado. Total: 5.0€
+3,Pedido Criado,Martelos,Confirmado,Braga,2025-12-18 23:14:23,,,
+5,,,,,2025-12-18 23:16:42,3,Em Distribuição,Foi entregue á transportadora
+11,,,,,2025-12-18 23:33:44,11_20251218233344,Criado,Pedido criado com 1 produtos para Braga
+11,,,,,2025-12-18 23:33:44,11_20251218233344,Confirmado,Pedido confirmado. Total: 11.0€
+11,Pedido Criado,Tintas,Confirmado,Braga,2025-12-18 23:33:44,,,
+11,,,,,2025-12-18 23:34:28,10,Aprovado,fefv
+12,,,,,2025-12-18 23:39:17,12_20251218233917,Criado,Pedido criado com 1 produtos para Braga
+12,,,,,2025-12-18 23:39:17,12_20251218233917,Confirmado,Pedido confirmado. Total: 11.0€
+12,Pedido Criado,Tintas,Confirmado,Braga,2025-12-18 23:39:17,,,
+gestor,,,,,2025-12-18 23:40:27,12,Em Distribuição,Foi entregue á transportadora
+111,,,,,2025-12-18 23:50:12,111_20251218235012,Criado,Pedido criado com 1 produtos para Braga
+111,,,,,2025-12-18 23:50:12,111_20251218235012,Confirmado,Pedido confirmado. Total: 22.0€
+111,Pedido Criado,Tintas,Confirmado,Braga,2025-12-18 23:50:12,,,
+gestor,,,,,2025-12-18 23:50:41,111,Em Distribuição,foi entregue á transportadora
