@@ -9,6 +9,7 @@ PEDIDOS_CSV = os.path.join(CLIENT_DIR, 'pedidos.csv')
 EVENTOS_CSV = os.path.join(CLIENT_DIR, 'eventos_pedido.csv')
 MENSAGENS_CSV = os.path.join(CLIENT_DIR, 'mensagens.csv')
 MATERIALS_CSV = os.path.join(os.path.dirname(__file__), 'materials.csv')
+AVALIACOES_CSV = os.path.join(CLIENT_DIR, 'avaliacoes.csv')
 
 # Estados possíveis para tracking
 ESTADOS_PEDIDO = [
@@ -20,6 +21,40 @@ ESTADOS_PEDIDO = [
     'Entregue',
     'Falhado',
     'Cancelado'
+]
+
+# ✅ Regra de cancelamento: permitido apenas se ainda NÃO foi atribuído
+# (ou seja, se ainda NÃO está "Em Processamento" nem depois)
+ESTADOS_NAO_CANCELAVEIS = {
+    'Em Processamento',
+    'Em Distribuição',
+    'Entregue',
+    'Falhado',
+    'Cancelado'
+}
+
+# Schema fixo do tracking (para evitar NaN por colunas diferentes)
+EVENTOS_SCHEMA = ['PedidoID', 'ClienteID', 'Estado', 'Descricao', 'Timestamp']
+
+# ✅ Schema para pedidos (para permitir atualização em ficheiro)
+PEDIDOS_SCHEMA = [
+    'PedidoID',
+    'ClienteID',
+    'Produto',
+    'Quantidade',
+    'Preço_Unitário',
+    'Preço_Total',
+    'Destino',
+    'Avaliação',
+    'Data',
+    'Estado'
+]
+AVALIACOES_SCHEMA = [
+    'PedidoID',
+    'ClienteID',
+    'Rating',
+    'Comentario',
+    'Timestamp'
 ]
 
 # Lazy import helper for PortalCliente to avoid import-time prompts
@@ -195,8 +230,8 @@ def mENU():
     print("5 - Sair")
     opçoes = 0
     opçoes = int(input())
-    
     return opçoes
+
 # We'll merge portalCliente into this file and provide a top-level role menu.
 
 def init_inventario():
@@ -241,14 +276,31 @@ def init_inventario():
     return produtosNome, produtosQtd, produtosPreco
 
 def _read_csv_if_exists(path: str) -> pd.DataFrame:
-    """Helper: read CSV into DataFrame or return empty DataFrame."""
+    """
+    Helper robusto: lê CSV sem converter valores para NaN,
+    e tenta manter tudo como string para evitar "nan" no tracking.
+    """
     try:
         if os.path.exists(path):
-            df = pd.read_csv(path)
-            # normalize ClienteID column if present: string, trimmed, fill unknown
+            df = pd.read_csv(
+                path,
+                dtype=str,
+                keep_default_na=False,
+                na_filter=False,
+                encoding='utf-8'
+            )
+
+            # normalizar ClienteID
             if 'ClienteID' in df.columns:
-                df['ClienteID'] = df['ClienteID'].fillna('').astype(str).str.strip()
+                df['ClienteID'] = df['ClienteID'].astype(str).str.strip()
                 df.loc[df['ClienteID'] == '', 'ClienteID'] = 'unknown'
+
+            # normalizar PedidoID/Estado quando existirem
+            if 'PedidoID' in df.columns:
+                df['PedidoID'] = df['PedidoID'].astype(str).str.strip()
+            if 'Estado' in df.columns:
+                df['Estado'] = df['Estado'].astype(str).str.strip()
+
             return df
     except Exception as e:
         print(f"Erro ao ler {path}: {e}")
@@ -331,63 +383,70 @@ def load_materials_dataframe():
 def criar_evento_pedido(pedido_id: str, novo_estado: str, cliente_id: str, descricao: str = "") -> dict:
     """
     Cria um novo evento de tracking para um pedido.
-    
-    Args:
-        pedido_id: Identificador único do pedido
-        novo_estado: Um dos estados definidos em ESTADOS_PEDIDO
-        cliente_id: ID do cliente
-        descricao: Descrição opcional do evento
-    
-    Returns:
-        dict com dados do evento criado
     """
     if novo_estado not in ESTADOS_PEDIDO:
         print(f"⚠ Estado '{novo_estado}' não reconhecido. Estados válidos: {ESTADOS_PEDIDO}")
         novo_estado = 'Criado'
-    
+
     evento = {
-        'PedidoID': pedido_id,
+        'PedidoID': str(pedido_id).strip(),
         'ClienteID': str(cliente_id).strip() if cliente_id else 'unknown',
-        'Estado': novo_estado,
-        'Descricao': descricao,
+        'Estado': str(novo_estado).strip(),
+        'Descricao': str(descricao) if descricao is not None else "",
         'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
-    
     return evento
+
+
+def _normalizar_eventos_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Garante que o DF de eventos tem as colunas do schema.
+    Se vierem colunas diferentes (ex: de outro módulo), isto evita NaN no Estado.
+    """
+    if df is None or df.empty:
+        return pd.DataFrame(columns=EVENTOS_SCHEMA)
+
+    # criar colunas em falta
+    for c in EVENTOS_SCHEMA:
+        if c not in df.columns:
+            df[c] = ""
+
+    # manter apenas schema (ignora lixo)
+    df = df[EVENTOS_SCHEMA].copy()
+
+    # normalizar tipos/trim
+    for c in EVENTOS_SCHEMA:
+        df[c] = df[c].astype(str).str.strip()
+
+    # evitar 'nan' literal
+    df = df.replace({'nan': ''})
+    df.loc[df['ClienteID'] == '', 'ClienteID'] = 'unknown'
+    return df
 
 
 def registar_evento_pedido(evento: dict) -> None:
     """
     Registra um evento de tracking no CSV de eventos.
     Cada mudança de estado cria uma entrada nova.
-    
-    Args:
-        evento: dict com dados do evento
     """
     global DF_EVENTOS
-    
+
     try:
-        # Criar DataFrame com o novo evento
         df_novo = pd.DataFrame([evento])
-        
-        # Carregar eventos existentes
+        df_novo = _normalizar_eventos_schema(df_novo)
+
         df_existentes = load_eventos()
-        
-        # Concatenar
-        if df_existentes.empty:
-            df_final = df_novo
-        else:
-            df_final = pd.concat([df_existentes, df_novo], ignore_index=True)
-        
-        # Salvar em arquivo
+        df_existentes = _normalizar_eventos_schema(df_existentes)
+
+        df_final = pd.concat([df_existentes, df_novo], ignore_index=True)
+
         os.makedirs(os.path.dirname(EVENTOS_CSV) or '.', exist_ok=True)
         df_final.to_csv(EVENTOS_CSV, index=False, encoding='utf-8')
-        
-        # Atualizar cache global
+
         DF_EVENTOS = df_final
-        
+
         print(f"✓ Evento registado: {evento['Estado']} para pedido {evento['PedidoID']}")
-        
+
     except Exception as e:
         print(f"✗ Erro ao registar evento: {e}")
 
@@ -395,83 +454,290 @@ def registar_evento_pedido(evento: dict) -> None:
 def obter_estado_atual_pedido(pedido_id: str) -> str:
     """
     Obtém o estado atual de um pedido (último evento registado).
-    
-    Args:
-        pedido_id: Identificador do pedido
-    
-    Returns:
-        string com o estado atual ou 'Desconhecido' se não encontrado
     """
     df_eventos = load_eventos()
-    
+    df_eventos = _normalizar_eventos_schema(df_eventos)
+
     if df_eventos.empty:
         return 'Desconhecido'
-    
-    # Filtrar eventos do pedido
+
+    pedido_id = str(pedido_id).strip()
     pedido_eventos = df_eventos[df_eventos['PedidoID'] == pedido_id]
-    
+
     if pedido_eventos.empty:
         return 'Desconhecido'
-    
-    # Retornar o último evento (índice mais elevado)
+
+    pedido_eventos = pedido_eventos.sort_values('Timestamp', ascending=True)
     ultimo_evento = pedido_eventos.iloc[-1]
-    return ultimo_evento['Estado']
+
+    estado = str(ultimo_evento.get('Estado', '')).strip()
+    if not estado or estado.lower() == 'nan':
+        return 'Desconhecido'
+    return estado
 
 
 def obter_historico_pedido(pedido_id: str) -> pd.DataFrame:
     """
     Obtém o histórico completo de tracking de um pedido.
-    
-    Args:
-        pedido_id: Identificador do pedido
-    
-    Returns:
-        DataFrame com todos os eventos do pedido ordenados por timestamp
     """
     df_eventos = load_eventos()
-    
+    df_eventos = _normalizar_eventos_schema(df_eventos)
+
     if df_eventos.empty:
-        return pd.DataFrame()
-    
-    pedido_eventos = df_eventos[df_eventos['PedidoID'] == pedido_id]
-    
-    # Ordenar por timestamp
+        return pd.DataFrame(columns=EVENTOS_SCHEMA)
+
+    pedido_id = str(pedido_id).strip()
+    pedido_eventos = df_eventos[df_eventos['PedidoID'] == pedido_id].copy()
+
     if not pedido_eventos.empty:
         pedido_eventos = pedido_eventos.sort_values('Timestamp', ascending=True)
-    
+
     return pedido_eventos
+
+
+# ================== PEDIDOS.CSV helpers (atualização em ficheiro) ==================
+def _normalizar_pedidos_schema(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return pd.DataFrame(columns=PEDIDOS_SCHEMA)
+
+    # cria colunas em falta
+    for c in PEDIDOS_SCHEMA:
+        if c not in df.columns:
+            df[c] = ""
+
+    # mantem schema
+    df = df[PEDIDOS_SCHEMA].copy()
+
+    # trim
+    for c in PEDIDOS_SCHEMA:
+        df[c] = df[c].astype(str).str.strip()
+
+    df = df.replace({'nan': ''})
+    df.loc[df['ClienteID'] == '', 'ClienteID'] = 'unknown'
+    return df
+
+
+def _normalizar_avaliacoes_schema(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return pd.DataFrame(columns=AVALIACOES_SCHEMA)
+
+    for c in AVALIACOES_SCHEMA:
+        if c not in df.columns:
+            df[c] = ""
+
+    df = df[AVALIACOES_SCHEMA].copy()
+
+    for c in AVALIACOES_SCHEMA:
+        df[c] = df[c].astype(str).str.strip()
+
+    return df.replace({'nan': ''})
+
+
+def load_avaliacoes() -> pd.DataFrame:
+    """LÇ‡ avaliaÇõÇœes do ficheiro (retorna vazio se nÇœo existir)."""
+    return _normalizar_avaliacoes_schema(_read_csv_if_exists(AVALIACOES_CSV))
+
+
+def registar_avaliacao_servico(pedido_id: str, cliente_id: str, rating: int, comentario: str = "") -> bool:
+    """Regista uma avaliaÇõÇœo 1-5 em avaliacoes.csv depois de validar que o pedido estÇ¡ concluÇ­do."""
+    try:
+        rating_int = int(rating)
+    except Exception:
+        print("AvaliaÇõÇœo invÇ­lida. Indique um nÇ§mero entre 1 e 5.")
+        return False
+
+    if rating_int < 1 or rating_int > 5:
+        print("AvaliaÇõÇœo invÇ­lida. Indique um nÇ§mero entre 1 e 5.")
+        return False
+
+    estado_atual = obter_estado_atual_pedido(pedido_id)
+    estado_normalizado = estado_atual.lower()
+    if not any(s in estado_normalizado for s in ["entregue", "conclu"]):
+        print(f"Pedido {pedido_id} ainda nÇœo estÇ¡ concluÇ­do (estado atual: {estado_atual}).")
+        return False
+
+    registo = {
+        'PedidoID': str(pedido_id).strip(),
+        'ClienteID': str(cliente_id).strip() if cliente_id else 'unknown',
+        'Rating': str(rating_int),
+        'Comentario': str(comentario).strip(),
+        'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+
+    try:
+        df_existentes = load_avaliacoes()
+        df_novo = _normalizar_avaliacoes_schema(pd.DataFrame([registo]))
+        df_final = pd.concat([df_existentes, df_novo], ignore_index=True)
+
+        os.makedirs(os.path.dirname(AVALIACOES_CSV) or '.', exist_ok=True)
+        df_final.to_csv(AVALIACOES_CSV, index=False, encoding='utf-8')
+        return True
+    except Exception as e:
+        print(f"Erro ao registar avaliaÇõÇœo: {e}")
+        return False
+
+
+def salvar_pedido_csv_local(
+    pedido_id: str,
+    cliente_id: str,
+    produtos_nome: list,
+    encomendas: list,
+    produtos_preco: list,
+    destino: str,
+    avaliacao: str,
+    estado: str,
+) -> None:
+    """
+    Guarda o pedido no pedidos.csv com PedidoID + Estado (para permitir atualizar quando cancelar).
+    Cria 1 linha por produto com quantidade > 0 (igual ao teu output atual, mas com mais colunas).
+    """
+    global DF_PEDIDOS
+
+    try:
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        linhas = []
+        for i in range(len(produtos_nome)):
+            try:
+                qtd = float(encomendas[i])
+            except Exception:
+                qtd = 0.0
+            if qtd > 0:
+                try:
+                    pu = float(produtos_preco[i])
+                except Exception:
+                    pu = 0.0
+                linhas.append({
+                    'PedidoID': str(pedido_id).strip(),
+                    'ClienteID': str(cliente_id).strip() if cliente_id else 'unknown',
+                    'Produto': str(produtos_nome[i]),
+                    'Quantidade': str(qtd),
+                    'Preço_Unitário': str(pu),
+                    'Preço_Total': str(qtd * pu),
+                    'Destino': str(destino),
+                    'Avaliação': str(avaliacao),
+                    'Data': now_str,
+                    'Estado': str(estado).strip()
+                })
+
+        if not linhas:
+            return
+
+        df_novo = pd.DataFrame(linhas)
+        df_exist = load_pedidos()
+        df_exist = _normalizar_pedidos_schema(df_exist)
+
+        df_final = pd.concat([df_exist, _normalizar_pedidos_schema(df_novo)], ignore_index=True)
+
+        os.makedirs(os.path.dirname(PEDIDOS_CSV) or '.', exist_ok=True)
+        df_final.to_csv(PEDIDOS_CSV, index=False, encoding='utf-8')
+
+        DF_PEDIDOS = df_final
+
+    except Exception as e:
+        print(f"✗ Erro ao salvar pedido em pedidos.csv: {e}")
+
+
+def atualizar_estado_pedido_csv(pedido_id: str, novo_estado: str) -> None:
+    """
+    Atualiza pedidos.csv (coluna Estado) para todas as linhas do PedidoID.
+    """
+    global DF_PEDIDOS
+    try:
+        df = load_pedidos()
+        df = _normalizar_pedidos_schema(df)
+        if df.empty:
+            return
+
+        pid = str(pedido_id).strip()
+        mask = df['PedidoID'].astype(str).str.strip() == pid
+        if not mask.any():
+            return
+
+        df.loc[mask, 'Estado'] = str(novo_estado).strip()
+
+        os.makedirs(os.path.dirname(PEDIDOS_CSV) or '.', exist_ok=True)
+        df.to_csv(PEDIDOS_CSV, index=False, encoding='utf-8')
+        DF_PEDIDOS = df
+    except Exception as e:
+        print(f"✗ Erro ao atualizar estado no pedidos.csv: {e}")
+
+
+# ================== REGRA DE CANCELAMENTO ==================
+def pedido_pode_ser_cancelado(pedido_id: str) -> bool:
+    estado_atual = obter_estado_atual_pedido(pedido_id)
+    if estado_atual in ESTADOS_NAO_CANCELAVEIS:
+        return False
+    return True
+
+
+def cancelar_pedido(pedido_id: str, cliente_id: str, motivo: str = "") -> bool:
+    """
+    Cancela pedido:
+      - só se NÃO estiver atribuído (não estar em "Em Processamento" nem depois)
+      - cria evento "Cancelado"
+      - atualiza pedidos.csv (Estado)
+      - cria mensagem
+    """
+    try:
+        pid = str(pedido_id).strip()
+        if not pid:
+            print("✗ PedidoID inválido.")
+            return False
+
+        estado_atual = obter_estado_atual_pedido(pid)
+        if not pedido_pode_ser_cancelado(pid):
+            print(f"✗ Não é possível cancelar. Estado atual: '{estado_atual}' (já atribuído ou finalizado).")
+            return False
+
+        desc = "Pedido cancelado pelo cliente."
+        if motivo:
+            desc += f" Motivo: {motivo}"
+
+        ok = alterar_estado_pedido(pid, 'Cancelado', cliente_id, desc)
+        if ok:
+            atualizar_estado_pedido_csv(pid, 'Cancelado')
+            return True
+        return False
+    except Exception as e:
+        print(f"✗ Erro ao cancelar pedido: {e}")
+        return False
 
 
 def alterar_estado_pedido(pedido_id: str, novo_estado: str, cliente_id: str, descricao: str = "") -> bool:
     """
     Altera o estado de um pedido criando um novo evento.
-    
-    Args:
-        pedido_id: Identificador do pedido
-        novo_estado: Novo estado para o pedido
-        cliente_id: ID do cliente
-        descricao: Descrição da alteração
-    
-    Returns:
-        True se alteração foi bem-sucedida, False caso contrário
+    ✅ Integra regra de cancelamento (Módulo 1): só cancela se não atribuído.
     """
     try:
+        pedido_id = str(pedido_id).strip()
+        novo_estado = str(novo_estado).strip()
+
+        # ✅ regra integrada
+        if novo_estado == 'Cancelado':
+            if not pedido_pode_ser_cancelado(pedido_id):
+                estado_atual = obter_estado_atual_pedido(pedido_id)
+                print(f"✗ Cancelamento bloqueado. Estado atual: '{estado_atual}' (já atribuído ou finalizado).")
+                return False
+
         estado_anterior = obter_estado_atual_pedido(pedido_id)
-        
-        # Criar novo evento
+
         evento = criar_evento_pedido(pedido_id, novo_estado, cliente_id, descricao)
-        
-        # Registar evento (automaticamente atualiza CSV)
         registar_evento_pedido(evento)
-        
-        # Registar mensagem de mudança de estado
+
         mensagem = f"Pedido {pedido_id}: Estado alterado de '{estado_anterior}' para '{novo_estado}'"
         if descricao:
             mensagem += f" - {descricao}"
         salvar_mensagem_tracking(cliente_id, 'Atualização de Estado', mensagem)
-        
+
+        # ✅ se mudarmos estado por gestor/cliente, atualizamos também pedidos.csv (se existir o PedidoID)
+        try:
+            atualizar_estado_pedido_csv(pedido_id, novo_estado)
+        except Exception:
+            pass
+
         return True
-        
+
     except Exception as e:
         print(f"✗ Erro ao alterar estado: {e}")
         return False
@@ -480,14 +746,9 @@ def alterar_estado_pedido(pedido_id: str, novo_estado: str, cliente_id: str, des
 def salvar_mensagem_tracking(cliente_id: str, tipo: str, mensagem: str) -> None:
     """
     Salva uma mensagem de tracking (confirmações, avisos, etc).
-    
-    Args:
-        cliente_id: ID do cliente
-        tipo: Tipo de mensagem (ex: 'Atualização de Estado', 'Confirmação', 'Aviso')
-        mensagem: Texto da mensagem
     """
     global DF_MENSAGENS
-    
+
     try:
         msg_dict = {
             'ClienteID': str(cliente_id).strip() if cliente_id else 'unknown',
@@ -495,22 +756,50 @@ def salvar_mensagem_tracking(cliente_id: str, tipo: str, mensagem: str) -> None:
             'Mensagem': mensagem,
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        
+
         df_novo = pd.DataFrame([msg_dict])
         df_existentes = load_mensagens()
-        
+
         if df_existentes.empty:
             df_final = df_novo
         else:
             df_final = pd.concat([df_existentes, df_novo], ignore_index=True)
-        
+
         os.makedirs(os.path.dirname(MENSAGENS_CSV) or '.', exist_ok=True)
         df_final.to_csv(MENSAGENS_CSV, index=False, encoding='utf-8')
-        
+
         DF_MENSAGENS = df_final
-        
+
     except Exception as e:
         print(f"✗ Erro ao salvar mensagem: {e}")
+
+
+# ================== OPÇÃO B ==================
+def resolver_pedido_id(input_id: str) -> str:
+    """
+    Permite ao gestor/cliente escrever:
+      - ID (ex: 1998_20251228213057) -> retorna igual
+      - só ClienteID (ex: 1998) -> resolve para o PedidoID mais recente desse cliente (prefixo 1998_)
+    """
+    input_id = str(input_id).strip()
+    if not input_id:
+        return input_id
+
+    if "_" in input_id:
+        return input_id
+
+    df_eventos = _normalizar_eventos_schema(load_eventos())
+    if df_eventos.empty:
+        return input_id
+
+    prefixo = input_id + "_"
+    candidatos = df_eventos[df_eventos["PedidoID"].astype(str).str.startswith(prefixo)].copy()
+    if candidatos.empty:
+        return input_id
+
+    candidatos = candidatos.sort_values("Timestamp", ascending=True)
+    return str(candidatos.iloc[-1]["PedidoID"]).strip()
+
 
 # ------------------ Cliente functions (adapted) ------------------
 def apresentacaoProd(produtosNome, produtosPreco):
@@ -518,12 +807,25 @@ def apresentacaoProd(produtosNome, produtosPreco):
     for i in range(0, len(produtosNome)):
         print(str(i + 1) + "- " + produtosNome[i] + "(" + str(produtosPreco[i]) + " eur/uni)")
 
-def avaliacao():
-    print("1- Experiência Boa")
-    print("2- Experiência intermédia")
-    print("3- Experiência Má")
-    ava = int(input())
-    return ava
+def avaliar_servico(cliente_id: Optional[str]):
+    print("\n=== AVALIAR SERVIÇO ===")
+    pedido_id_input = input("ID do pedido: ").strip()
+    if not pedido_id_input:
+        pedido_id_input = str(cliente_id).strip() if cliente_id else ""
+
+    if not pedido_id_input:
+        print("Nenhum pedido indicado.")
+        return
+
+    pedido_id = resolver_pedido_id(pedido_id_input)
+    if pedido_id != pedido_id_input:
+        print(f"PedidoID resolvido automaticamente: {pedido_id}")
+
+    rating = input("Avaliação (1-5): ").strip()
+    comentario = input("Comentário (opcional): ").strip()
+
+    if registar_avaliacao_servico(pedido_id, cliente_id, rating, comentario):
+        print("Avaliação registada com sucesso. Obrigado pelo feedback!")
 
 def calcTotal(encomendas, produtoPreco):
     total = 0
@@ -531,12 +833,9 @@ def calcTotal(encomendas, produtoPreco):
         total = total + encomendas[i] * produtoPreco[i]
     return total
 
-def consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos):
+def consultaPed(produtosNome, encomendas, produtosPreco, destinos, td):
     for i in range(0, len(encomendas)):
         print(produtosNome[i] + " com a quantidade de " + str(encomendas[i]) + " e com o preço de " + str(encomendas[i] * produtosPreco[i]))
-    print("---Avalições---")
-    for a in range(0, t):
-        print("Avalição " + str(a + 1) + "--> " + str(avaliacoes[a]))
     print("---Destino da Encomenda---")
     for d in range(0, td):
         print("Destino " + str(d + 1) + ": " + destinos[d])
@@ -573,7 +872,9 @@ def cliente_menu():
     print("1 - Lista de produtos")
     print("2 - Fazer pedido de produto")
     print("3 - Consultar lista de produtos encomendados")
-    print("4 - Sair")
+    print("4 - Cancelar pedido")
+    print("5 - Avaliar serviço")
+    print("6 - Sair")
     option = int(input())
     return option
 
@@ -587,9 +888,9 @@ def validacaoStock(produtosNome, produtosQtd, encomendas, produtosPreco):
                 produtosQtd[i] = produtosQtd[i] - encomendas[i]
                 print(" - " + produtosNome[i] + " com a quantidade de " + str(encomendas[i]) + " e o preço de " + str(encomendas[i] * produtosPreco[i]))
 
+
 # Cliente main (keeps its own state for orders/evaluations)
 def cliente_main(produtosNome, produtosQtd, produtosPreco):
-    avaliacoes = [0] * 3
     destinosOpcao = [""] * 3
     destinos = [""] * 3
     encomendas = [0] * len(produtosNome)
@@ -600,59 +901,68 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
 
     chamadaMenu = 0
     td = 0
-    t = 0
 
     print("PORTAL DO CLIENTE")
-    # Perguntar pelo ID do cliente para filtrar pedidos posteriormente
     try:
         CLIENT_ID = input("Insira o seu ID de cliente: ").strip()
     except Exception:
         CLIENT_ID = None
-    
+
     while True:
         opcao = cliente_menu()
+
         if opcao == 1:
             consultaStock(produtosNome, produtosQtd, produtosPreco)
             chamadaMenu = 1
+
         elif opcao == 2:
             print("Qual o produto que escolhe?")
             criacaoPedido(produtosNome, encomendas, produtosPreco)
             print("Lista de produtos encomendados:")
             validacaoStock(produtosNome, produtosQtd, encomendas, produtosPreco)
+
             print("Indique o destino da encomenda: ")
             escolha = escolherDestino(destinosOpcao)
             destinos[td] = destinosOpcao[escolha - 1]
             td = td + 1
+
             total = calcTotal(encomendas, produtosPreco)
             print("Obrigado pela a encomenda" + " O total da encomenda é " + str(total) + " eur")
-            print("Avalie o seu pedido")
-            ava = avaliacao()
-            if t < len(avaliacoes):
-                avaliacoes[t] = ava
-                t = t + 1
-            
+
             # ===== tracking EM TEMPO REAL =====
-            # Gerar ID único para o pedido
             pedido_id = f"{CLIENT_ID}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-            
-            # Registar primeiro evento: Pedido Criado
+
             evento_criacao = criar_evento_pedido(
-                pedido_id, 
-                'Criado', 
+                pedido_id,
+                'Criado',
                 CLIENT_ID,
                 f"Pedido criado com {sum(1 for e in encomendas if e > 0)} produtos para {destinos[td-1]}"
             )
             registar_evento_pedido(evento_criacao)
-            
-            # Confirmar pedido
+
             alterar_estado_pedido(
                 pedido_id,
                 'Confirmado',
                 CLIENT_ID,
                 f"Pedido confirmado. Total: {total}€"
             )
-            
-            # If PortalCliente helpers are available, import lazily, set CLIENT_ID and call save routines
+
+            # ✅ Guardar também em pedidos.csv com PedidoID + Estado (para depois cancelar/atualizar)
+            try:
+                salvar_pedido_csv_local(
+                    pedido_id=pedido_id,
+                    cliente_id=CLIENT_ID,
+                    produtos_nome=produtosNome,
+                    encomendas=encomendas,
+                    produtos_preco=produtosPreco,
+                    destino=destinos[td-1],
+                    avaliacao="",
+                    estado='Confirmado'
+                )
+            except Exception:
+                pass
+
+            # (Opcional) manter PortalCliente para mensagens (sem mexer no tracking)
             try:
                 pc = _get_portal_cliente_module()
                 if pc is not None:
@@ -661,80 +971,104 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
                     except Exception:
                         pass
                     try:
-                        pc.salvar_pedidos_csv(produtosNome, encomendas, produtosPreco, destinos, avaliacoes, t, td)
-                    except Exception:
-                        pass
-                    try:
-                        pc.salvar_eventos_pedido_csv(produtosNome, encomendas, destinos, td)
-                    except Exception:
-                        pass
-                    try:
                         pc.salvar_mensagens_csv("Confirmação", f"Pedido confirmado para {destinos[td-1]} - Total: {total}€")
                     except Exception:
                         pass
-                    # refresh in-memory caches
                     try:
                         load_all_client_csvs()
                     except Exception:
                         pass
             except Exception:
                 pass
+
             chamadaMenu = 1
+
         elif opcao == 3:
-            # Mostrar apenas pedidos deste cliente, se a coluna ClienteID existir
             try:
                 df_pedidos = load_cliente_pedidos()
                 if df_pedidos is not None and not df_pedidos.empty and CLIENT_ID is not None and 'ClienteID' in df_pedidos.columns:
-                    df_pedidos['ClienteID'] = df_pedidos['ClienteID'].fillna('').astype(str).str.strip()
+                    df_pedidos = _normalizar_pedidos_schema(df_pedidos)
                     df_my = df_pedidos.loc[df_pedidos['ClienteID'] == CLIENT_ID]
                     if not df_my.empty:
                         print("\n=== ENCOMENDAS ===")
                         print(df_my.to_string(index=False))
-                        
-                        # Mostrar Tracking em tempo real
-                        df_eventos = load_eventos()
+
+                        df_eventos = _normalizar_eventos_schema(load_eventos())
                         if not df_eventos.empty and CLIENT_ID:
                             df_eventos_cliente = df_eventos[df_eventos['ClienteID'] == CLIENT_ID]
                             if not df_eventos_cliente.empty:
                                 print("\n=== Tracking EM TEMPO REAL ===")
+                                df_eventos_cliente = df_eventos_cliente.sort_values('Timestamp', ascending=True)
+
                                 for _, evento in df_eventos_cliente.iterrows():
                                     ts = str(evento.get('Timestamp', ''))
                                     est = str(evento.get('Estado', ''))
                                     desc = str(evento.get('Descricao', ''))
-                                    print(f"  • {ts} → {est:20s} ({desc[:50]})")
-                                
-                                # Mostrar estado atual
-                                if 'PedidoID' in df_eventos_cliente.columns:
-                                    pedidos_unicos = df_eventos_cliente['PedidoID'].unique()
-                                    print("\n  ➤ ESTADO ATUAL:")
-                                    for pid in pedidos_unicos:
-                                        estado = obter_estado_atual_pedido(pid)
-                                        print(f"    {pid}: {estado}")
-                                    
-                                    # Clientes apenas consultam o tracking; alterações são feitas pelo gestor
+                                    pid = str(evento.get('PedidoID', ''))
+                                    print(f"  • {ts} → {est:20s} | {pid} | ({desc[:60]})")
+
+                                pedidos_unicos = df_eventos_cliente['PedidoID'].unique()
+                                print("\n  ➤ ESTADO ATUAL:")
+                                for pid in pedidos_unicos:
+                                    estado = obter_estado_atual_pedido(pid)
+                                    print(f"    {pid}: {estado}")
                             else:
                                 print("\n  Sem eventos de Tracking ainda.")
                     else:
                         print("Nenhuma encomenda encontrada para o seu ID.")
                 else:
-                    # fallback: mostrar pedidos da sessão
-                    consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
+                    consultaPed(produtosNome, encomendas, produtosPreco, destinos, td)
             except Exception as e:
                 print(f"Erro ao consultar pedidos: {e}")
-                consultaPed(produtosNome, encomendas, produtosPreco, avaliacoes, t, td, destinos)
+                consultaPed(produtosNome, encomendas, produtosPreco, destinos, td)
             chamadaMenu = 1
+
         elif opcao == 4:
+            # ✅ Cancelar pedido (só se não atribuído)
+            print("\n=== CANCELAR PEDIDO ===")
+            print("Podes inserir o ID .")
+            pid_in = input("ID do pedido (ENTER para cancelar o mais recente): ").strip()
+
+            if not pid_in:
+                pid_in = str(CLIENT_ID).strip() if CLIENT_ID else ""
+
+            pedido_id = resolver_pedido_id(pid_in)
+            if pedido_id != pid_in:
+                print(f"✓ PedidoID resolvido automaticamente: {pedido_id}")
+
+            motivo = input("Motivo (opcional): ").strip()
+            ok = cancelar_pedido(pedido_id, CLIENT_ID, motivo)
+            if ok:
+                print(f"✓ Pedido {pedido_id} cancelado com sucesso.")
+            else:
+                print(f"✗ Não foi possível cancelar o pedido {pedido_id}.")
+
+            try:
+                load_all_client_csvs()
+            except Exception:
+                pass
+
+            chamadaMenu = 1
+
+        elif opcao == 5:
+            avaliar_servico(CLIENT_ID)
+            chamadaMenu = 1
+
+        elif opcao == 6:
             chamadaMenu = 0
+
         else:
             print("Opção inválida")
             chamadaMenu = 1
+
         if chamadaMenu != 1:
             break
+
     print("Continuação de um ótimo dia")
+
 
 # ------------------ Gestor functions (adapted to use shared inventory) ------------------
 def encomendasAprovadas(produtosNome, produtosQtd, produtosPreco):
-    # This function uses a sample set of orders (like original) and the shared inventory.
     encomendas = [0] * 3
     iD = [0] * 3
     zonaEncomendas = [""] * 3
@@ -829,7 +1163,8 @@ def gestor_menu():
     print("7 - Consultar mensagens (confirmações/avisos)")
     print("8 - Alterar estado de um pedido")
     print("9 - Ver histórico de um pedido")
-    print("10 - Sair")
+    print("10 - Listar pedidos filtrados (estado/zona)")
+    print("11 - Sair")
     opcoes = int(input())
     return opcoes
 
@@ -852,8 +1187,44 @@ def consultarZonas(zonasAtendidas):
         print("As zonas atendidas são: " + chr(13) + zonasAtendidas[i] + ".")
         i = i + 1
 
+
+def listar_pedidos_filtrados_estado_zona():
+    """Lista pedidos com filtros opcionais por Estado e Destino (zona)."""
+    df = load_cliente_pedidos()
+    df = _normalizar_pedidos_schema(df)
+
+    if df.empty:
+        print("Nenhum pedido encontrado.")
+        return
+
+    print("\n=== FILTRO DE PEDIDOS ===")
+    print("Estados disponíveis:")
+    for i, est in enumerate(ESTADOS_PEDIDO, 1):
+        print(f"  {i} - {est}")
+    estado_in = input("Estado (ENTER para todos ou escolha acima): ").strip()
+    zona_in = input("Zona/Destino (ENTER para todas): ").strip()
+
+    filtrado = df.copy()
+
+    if estado_in:
+        if estado_in.isdigit():
+            idx = int(estado_in) - 1
+            if 0 <= idx < len(ESTADOS_PEDIDO):
+                estado_in = ESTADOS_PEDIDO[idx]
+        filtrado = filtrado[filtrado['Estado'].str.lower() == estado_in.lower()]
+
+    if zona_in:
+        filtrado = filtrado[filtrado['Destino'].str.lower().str.contains(zona_in.lower(), na=False)]
+
+    if filtrado.empty:
+        print("Nenhum pedido encontrado com esses filtros.")
+        return
+
+    cols = [c for c in ['PedidoID', 'ClienteID', 'Produto', 'Quantidade', 'Destino', 'Estado', 'Data', 'Avaliação'] if c in filtrado.columns]
+    print("\n=== RESULTADO ===")
+    print(filtrado[cols].to_string(index=False))
+
 def gestor_main(produtosNome, produtosQtd, produtosPreco):
-    # Local gestor state (sample orders/professionals)
     zonasAtendidas = ["Braga", "Guimarães"]
     iD = [1001, 1002, 1003]
     estadoEncomenda = ["Pendente"] * 3
@@ -866,32 +1237,35 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
     print("Bem-vindo, qual o seu nome?")
     nome = input()
     while True:
-        # Refresh client CSVs each loop to keep data in sync with PortalCliente
         try:
             load_all_client_csvs()
         except Exception:
-            # non-fatal: we'll handle missing/empty DataFrames later
             pass
+
         opcoes = gestor_menu()
+
         if opcoes == 1:
             consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonaEncomendas, zonasAtendidas)
             print("******************************")
             voltar = 1
+
         elif opcoes == 2:
             consultarZonas(zonasAtendidas)
             print("******************************")
             voltar = 1
+
         elif opcoes == 3:
             consultarEstafetas(profissionalZona, profissionalLivre)
             print("******************************")
             voltar = 1
+
         elif opcoes == 4:
             encomendasAprovadas(produtosNome, produtosQtd, produtosPreco)
             print("******************************")
             voltar = 1
+
         elif opcoes == 5:
-            # Carregar e exibir pedidos do cliente
-            df_pedidos = load_cliente_pedidos()
+            df_pedidos = _normalizar_pedidos_schema(load_cliente_pedidos())
             if df_pedidos is not None and not df_pedidos.empty:
                 print("\n=== PEDIDOS DO CLIENTE ===")
                 print(df_pedidos.to_string(index=False))
@@ -899,23 +1273,24 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
                 print("Nenhum pedido do cliente encontrado.")
             print("******************************")
             voltar = 1
+
         elif opcoes == 6:
-            # Carregar e exibir eventos de pedidos
-            df_eventos = load_cliente_eventos()
+            df_eventos = _normalizar_eventos_schema(load_cliente_eventos())
             if df_eventos is not None and not df_eventos.empty:
                 print("\n=== EVENTOS DE PEDIDOS (TRACKING) ===")
+                df_eventos = df_eventos.sort_values('Timestamp', ascending=True)
                 for _, evento in df_eventos.iterrows():
-                    pid = str(evento.get('PedidoID', 'N/A'))[-15:]
+                    pid_full = str(evento.get('PedidoID', 'N/A'))
                     est = str(evento.get('Estado', 'N/A'))
                     ts = str(evento.get('Timestamp', 'N/A'))
-                    desc = str(evento.get('Descricao', ''))[:35]
-                    print(f"  {pid:15s} | {est:20s} | {ts} | {desc}")
+                    desc = str(evento.get('Descricao', ''))[:40]
+                    print(f"  {pid_full} | {est:20s} | {ts} | {desc}")
             else:
                 print("✗ Nenhum evento de pedido encontrado.")
             print("******************************")
             voltar = 1
+
         elif opcoes == 7:
-            # Carregar e exibir mensagens
             df_mensagens = load_cliente_mensagens()
             if df_mensagens is not None and not df_mensagens.empty:
                 print("\n=== MENSAGENS (CONFIRMAÇÕES/AVISOS) ===")
@@ -924,37 +1299,32 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
                 print("Nenhuma mensagem encontrada.")
             print("******************************")
             voltar = 1
+
         elif opcoes == 8:
-            # Alterar estado de um pedido
             print("\n=== ALTERAR ESTADO DE PEDIDO ===")
-            pedido_id = input("Insira o ID do pedido: ").strip()
-            
+
+            pedido_id_input = input("Insira o ID do pedido: ").strip()
+            pedido_id = resolver_pedido_id(pedido_id_input)
+            if pedido_id != pedido_id_input:
+                print(f"✓ PedidoID resolvido automaticamente: {pedido_id}")
+
             print("Estados disponíveis:")
             for i, estado in enumerate(ESTADOS_PEDIDO, 1):
                 print(f"{i} - {estado}")
-            
+
             opcao_estado = int(input("Escolha o novo estado: ")) - 1
-            
+
             if 0 <= opcao_estado < len(ESTADOS_PEDIDO):
                 novo_estado = ESTADOS_PEDIDO[opcao_estado]
                 descricao = input("Descrição da alteração (opcional): ").strip()
-                
-                # Obter cliente_id do pedido (procurar nos eventos ou pedidos); usar 'gestor' como fallback
+
                 cliente_id = "gestor"
                 try:
-                    # Primeiro tentar encontrar nos eventos existentes
-                    df_eventos = load_eventos()
-                    if df_eventos is not None and not df_eventos.empty and 'PedidoID' in df_eventos.columns:
+                    df_eventos = _normalizar_eventos_schema(load_eventos())
+                    if df_eventos is not None and not df_eventos.empty:
                         evs = df_eventos[df_eventos['PedidoID'] == pedido_id]
                         if not evs.empty:
                             cliente_id = str(evs.iloc[0].get('ClienteID', cliente_id)).strip() or cliente_id
-                    # Se não encontrado, tentar nos pedidos
-                    if cliente_id == "gestor":
-                        df_pedidos = load_cliente_pedidos()
-                        if df_pedidos is not None and not df_pedidos.empty and 'PedidoID' in df_pedidos.columns:
-                            row = df_pedidos[df_pedidos['PedidoID'] == pedido_id]
-                            if not row.empty:
-                                cliente_id = str(row.iloc[0].get('ClienteID', cliente_id)).strip() or cliente_id
                 except Exception:
                     cliente_id = "gestor"
 
@@ -967,13 +1337,17 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
                 print("Opção inválida.")
             print("******************************")
             voltar = 1
+
         elif opcoes == 9:
-            # Ver histórico completo de um pedido
             print("\n=== HISTÓRICO DE Tracking ===")
-            pedido_id = input("Insira o ID do pedido: ").strip()
-            
+
+            pedido_id_input = input("Insira o ID do pedido: ").strip()
+            pedido_id = resolver_pedido_id(pedido_id_input)
+            if pedido_id != pedido_id_input:
+                print(f"✓ PedidoID resolvido automaticamente: {pedido_id}")
+
             df_historico = obter_historico_pedido(pedido_id)
-            
+
             if not df_historico.empty:
                 print(f"\nPedido: {pedido_id}")
                 print("-" * 70)
@@ -983,20 +1357,29 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
                     desc = str(evento.get('Descricao', ''))
                     print(f"{ts} | {est:20s} | {desc}")
                 print("-" * 70)
-                
+
                 estado_atual = obter_estado_atual_pedido(pedido_id)
                 print(f"\n➤ Estado Atual: {estado_atual}")
             else:
                 print(f"✗ Nenhum evento encontrado para o pedido {pedido_id}")
             print("******************************")
             voltar = 1
+
         elif opcoes == 10:
-            voltar = 0
-        else:
-            print("Insira um número entre 1-10")
+            listar_pedidos_filtrados_estado_zona()
+            print("******************************")
             voltar = 1
+
+        elif opcoes == 11:
+            voltar = 0
+
+        else:
+            print("Insira um número entre 1-11")
+            voltar = 1
+
         if voltar != 1:
             break
+
     print("Sistema finalizado com sucesso")
 
 
