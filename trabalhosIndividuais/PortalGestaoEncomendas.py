@@ -1,257 +1,216 @@
-def consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonaEncomendas):
-    i = 0
-    while i <= 2:
-        print("As encomendas pendentes são: " + chr(13) + str(iD[i]) + " - O material pedido foi " + materiaisRequeridos[i] + " com a quantidade de " + str(materiaisRequeridosQtd[i]) + ".")
-        i = i + 1
+import csv
+from datetime import datetime
+import os
 
-def consultarEstafetas(profissionalZona, profissionalLivre):
-    i = 0
-    while i <= 2:
-        if profissionalLivre[i] == True:
-            print("O Estafeta " + str(i) + " encontra-se na zona " + profissionalZona[i] + ".")
-        i = i + 1
+# ---------- Funções de criação inicial dos CSVs ----------
+def criar_csv_eventos():
+    if not os.path.exists("eventos_pedido.csv"):
+        with open("eventos_pedido.csv", "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["idEvento", "idPedido", "estado", "utilizador", "timestamp"])
+            writer.writeheader()
 
-def consultarZonas(zonasAtendidas):
-    i = 0
-    while i <= 1:
-        print("As zonas atendidas são: " + chr(13) + zonasAtendidas[i] + ".")
-        i = i + 1
+def criar_csv_atribuicoes():
+    if not os.path.exists("atribuicoes.csv"):
+        with open("atribuicoes.csv", "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao"])
+            writer.writeheader()
 
-def encomendasAprovadas():
-    materialsName = [""] * (10)
-    materialsQtd = [0] * (10)
-    materialsPrice = [0] * (10)
-    orderMaterialQtd = [0] * (5)
+# ---------- Funções de apoio ----------
+def importar_pedidos_para_encomendas():
+    pedidos_file = "pedidos.csv"
+    encomendas_file = "encomendas.csv"
 
-    materialsName[0] = "Tintas"
-    materialsName[1] = "Parafusos"
-    materialsName[2] = "Martelos"
-    materialsName[3] = "Pinceis"
-    materialsName[4] = "Verniz"
-    materialsName[5] = "Nivelador"
-    materialsName[6] = "Lixa"
-    materialsName[7] = "Aparafusadora"
-    materialsName[8] = "Fita-metrica"
-    materialsName[9] = "Serra"
-    materialsQtd[0] = 10
-    materialsQtd[1] = 100
-    materialsQtd[2] = 6
-    materialsQtd[3] = 10
-    materialsQtd[4] = 7
-    materialsQtd[5] = 15
-    materialsQtd[6] = 150
-    materialsQtd[7] = 33
-    materialsQtd[8] = 57
-    materialsQtd[9] = 0
-    materialsPrice[0] = 11
-    materialsPrice[1] = 1.6
-    materialsPrice[2] = 5
-    materialsPrice[3] = 9
-    materialsPrice[4] = 14
-    materialsPrice[5] = 23
-    materialsPrice[6] = 1
-    materialsPrice[7] = 55
-    materialsPrice[8] = 3
-    materialsPrice[9] = 7
-    encomendas = [0] * (3)
-    iD = [0] * (3)
-    zonaEncomendas = [""] * (3)
-    estadoEncomenda = [""] * (3)
-    materiaisRequeridos = [""] * (3)
-    materiaisRequeridosQtd = [0] * (3)
-    zonasAtendidas = [""] * (2)
-    profissionalZona = [""] * (3)
-    profissionalLivre = [False] * (3)
+    colunas_encomendas = [
+        "id", "idCliente", "produto", "quantidade", "origem", "destino", 
+        "dataCriacao", "janelaInicio", "janelaFim", "duracaoEstimadaMin",
+        "zona", "prioridade", "estado", "idEstafeta"
+    ]
 
-    zonasAtendidas[0] = "Braga"
-    zonasAtendidas[1] = "Guimarães"
-    iD[0] = 1001
-    estadoEncomenda[0] = "Pendente"
-    zonaEncomendas[0] = "Braga"
-    materiaisRequeridos[0] = "Nivelador"
-    materiaisRequeridosQtd[0] = 10
-    iD[1] = 1002
-    estadoEncomenda[1] = "Pendente"
-    zonaEncomendas[1] = "Faro"
-    materiaisRequeridos[1] = "Aparafusadora"
-    materiaisRequeridosQtd[1] = 2
-    iD[2] = 1003
-    estadoEncomenda[2] = "Pendente"
-    zonaEncomendas[2] = "Guimarães"
-    materiaisRequeridos[2] = "Serra"
-    materiaisRequeridosQtd[2] = 5
-    tamanhoProfissionais = 3
-    profissionalZona[0] = "Guimarães"
-    profissionalZona[1] = "Guimarães"
-    profissionalZona[2] = "Braga"
-    profissionalLivre[0] = True
-    profissionalLivre[1] = False
-    profissionalLivre[2] = True
-    i = 0
-    tamanhoEncomendas = 3
-    while i < tamanhoEncomendas:
+    pedidos = []
+    if os.path.exists(pedidos_file):
+        with open(pedidos_file, "r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                pedidos.append(row)
 
-        # Testar as zonas
-        zona = False
-        j = 0
-        while j < 2:
-            if zonaEncomendas[i] == zonasAtendidas[j]:
-                zona = True
-            j = j + 1
-            stock = False
-            p = 0
+    encomendas = []
+    for i, p in enumerate(pedidos, start=1):
+        encomenda = {
+            "id": i,
+            "idCliente": p.get("ClienteID", ""),
+            "produto": p.get("Produto", "N/A"),
+            "quantidade": p.get("Quantidade", "0"),
+            "origem": "Loja",
+            "destino": p.get("Destino", ""),
+            "dataCriacao": p.get("Data", datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+            "janelaInicio": "",
+            "janelaFim": "",
+            "duracaoEstimadaMin": "",
+            "zona": p.get("Destino", ""),
+            "prioridade": "Normal",
+            "estado": "pendente",
+            "idEstafeta": ""
+        }
+        encomendas.append(encomenda)
 
-            # Testar os nomes dos materiais e a quantidade disponível de cada um
-            while p < 9 and zona == True:
-                if materiaisRequeridos[i] == materialsName[p]:
-                    if materiaisRequeridosQtd[i] <= materialsQtd[p]:
-                        stock = True
-                        p = 1000
-                    else:
-                        p = 10000
-                else:
-                    p = p + 1
-        if zona == True and stock == True:
-            print("Encomenda " + str(iD[i]) + ": APROVADA")
-            estadoEncomenda[i] = "Aprovado"
+    if encomendas:
+        with open(encomendas_file, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=colunas_encomendas)
+            writer.writeheader()
+            writer.writerows(encomendas)
+
+    print(f"✓ {len(encomendas)} pedidos importados para {encomendas_file}")
+
+
+def gerar_id_csv(csv_file, campo_id):
+    try:
+        with open(csv_file, "r") as f:
+            reader = csv.DictReader(f)
+            ids = [int(row[campo_id]) for row in reader if row[campo_id]]
+            return max(ids) + 1 if ids else 1
+    except FileNotFoundError:
+        return 1
+
+def criar_evento(idPedido, estado, utilizador):
+    criar_csv_eventos()
+    idEvento = gerar_id_csv("eventos_pedido.csv", "idEvento")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("eventos_pedido.csv", "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["idEvento", "idPedido", "estado", "utilizador", "timestamp"])
+        writer.writerow({"idEvento": idEvento, "idPedido": idPedido, "estado": estado, "utilizador": utilizador, "timestamp": timestamp})
+
+def ler_encomendas():
+    """Lê encomendas.csv (não pedidos.csv)"""
+    encomendas_file = "encomendas.csv"
+    if not os.path.exists(encomendas_file):
+        return []
+
+    with open(encomendas_file, "r") as f:
+        reader = csv.DictReader(f)
+        encomendas = [row for row in reader]
+    return encomendas
+
+def atualizar_encomenda(idPedido, novo_estado, idEstafeta=""):
+    encomendas_file = "encomendas.csv"
+    encomendas = ler_encomendas()
+    for e in encomendas:
+        if str(e.get("id", "")) == str(idPedido):
+            e["estado"] = novo_estado
+            if idEstafeta:
+                e["idEstafeta"] = str(idEstafeta)
+    if encomendas:
+        with open(encomendas_file, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=encomendas[0].keys())
+            writer.writeheader()
+            writer.writerows(encomendas)
+
+# ---------- Funções principais do Gestor ----------
+def consultar_encomendas_pendentes():
+    encomendas = ler_encomendas()
+    pendentes = [e for e in encomendas if e["estado"].lower() == "pendente"]
+    if not pendentes:
+        print("Não existem encomendas pendentes.")
+        return
+    for e in pendentes:
+        print(f"Cliente: {e.get('idCliente','N/A')} | Produto: {e.get('produto','N/A')} | Qtde: {e.get('quantidade','N/A')} | Estado: {e.get('estado','N/A')}")
+
+def aprovar_encomendas(zonasAtendidas, estafetas):
+    encomendas = ler_encomendas()
+    for e in encomendas:
+        if e["estado"].lower() != "pendente":
+            continue
+
+        # Verifica zona
+        if e.get("Destino", "") not in zonasAtendidas:
+            print(f'Encomenda do cliente {e.get("ClienteID")} REJEITADA: Zona não atendida')
+            atualizar_encomenda(e.get("ClienteID"), "rejeitado")
+            criar_evento(e.get("ClienteID"), "Rejeitada", "gestor")
+            continue
+
+        # Verifica stock
+        try:
+            quantidade = float(e.get("Quantidade", 0))
+        except:
+            quantidade = 0
+        try:
+            preco = float(e.get("Preço_Unitário", 0))
+        except:
+            preco = 0
+        if quantidade <= 0:
+            print(f'Encomenda do cliente {e.get("ClienteID")} REJEITADA: Quantidade inválida')
+            atualizar_encomenda(e.get("ClienteID"), "rejeitado")
+            criar_evento(e.get("ClienteID"), "Rejeitada", "gestor")
+            continue
+
+        # Aprovada
+        print(f'Encomenda do cliente {e.get("ClienteID")} APROVADA')
+        atualizar_encomenda(e.get("ClienteID"), "aprovada")
+        criar_evento(e.get("ClienteID"), "Aprovada", "gestor")
+
+        # Atribuição de estafeta
+        zona = e.get("Destino", "")
+        estafeta_disponivel = next((est for est in estafetas if est["zona"] == zona and est["livre"]), None)
+        if estafeta_disponivel:
+            atualizar_encomenda(e.get("ClienteID"), "atribuida", idEstafeta=estafeta_disponivel["idEstafeta"])
+            estafeta_disponivel["livre"] = False
+            criar_evento(e.get("ClienteID"), "Atribuída", "gestor")
+            idAtribuicao = gerar_id_csv("atribuicoes.csv", "idAtribuicao")
+            criar_csv_atribuicoes()
+            with open("atribuicoes.csv", "a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao"])
+                writer.writerow({"idAtribuicao": idAtribuicao, "idPedido": e.get("ClienteID"), "idEstafeta": estafeta_disponivel["idEstafeta"], "dataAtribuicao": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+            print(f'Encomenda atribuída ao Estafeta {estafeta_disponivel["idEstafeta"]}')
         else:
-            print("Encomenda " + str(iD[i]) + ": REJEITADA")
-            estadoEncomenda[i] = "Rejeitado"
-        i = i + 1
-        i = 0
-        while i < tamanhoEncomendas:
-            if estadoEncomenda[i] == "Aprovado":
-                atribuido = False
-                k = 0
+            print(f'Encomenda aguarda atribuição (nenhum estafeta disponível)')
 
-                # Atribuição de Profissionais/Estafetas
-                while k < tamanhoProfissionais and atribuido == False:
-                    if zonaEncomendas[i] == profissionalZona[k] and profissionalLivre[k] == True:
-                        print("Encomenda " + str(iD[i]) + ": Atribuída ao Profissional " + str(k))
-                        estadoEncomenda[i] = "Em Processamento"
-                        profissionalLivre[k] = False
-                        atribuido = True
-                    else:
-                        k = k + 1
-                if atribuido == False:
-                    print("Encomenda " + str(iD[i]) + ": NENHUM Estafeta DISPONÍVEL (Aguardar Atribuição)")
-                    estadoEncomenda[i] = "Aguardar Atribuição"
-            else:
-                i = i + 1
-    i = i + 1
+# ---------- Função para filtrar encomendas por zona ----------
+def filtrar_encomendas_por_zona():
+    encomendas = ler_encomendas()
+    if not encomendas:
+        print("Não existem encomendas registadas.")
+        return
 
-def mENU():
-    print("*****MENU*****")
-    print("1 - Consultar encomendas pendentes")
-    print("2 - Consultar zonas atendidas")
-    print("3 - Consultar estafetas disponíveis")
-    print("4 - Consultar encomendas aprovadas")
-    print("5 - Sair")
-    opçoes = 0
-    opçoes = int(input())
-    
-    return opçoes
+    zona = input("Indique a zona para filtrar: ").strip()
+    filtradas = [e for e in encomendas if e.get("Destino", "").lower() == zona.lower()]
 
-# Main
-materialsName = [""] * (10)
-materialsQtd = [0] * (10)
-materialsPrice = [0] * (10)
-orderMaterialQtd = [0] * (5)
+    if not filtradas:
+        print(f"Não existem encomendas na zona '{zona}'.")
+        return
 
-materialsName[0] = "Tintas"
-materialsName[1] = "Parafusos"
-materialsName[2] = "Martelos"
-materialsName[3] = "Pinceis"
-materialsName[4] = "Verniz"
-materialsName[5] = "Nivelador"
-materialsName[6] = "Lixa"
-materialsName[7] = "Aparafusadora"
-materialsName[8] = "Fita-metrica"
-materialsName[9] = "Serra"
-materialsQtd[0] = 10
-materialsQtd[1] = 100
-materialsQtd[2] = 6
-materialsQtd[3] = 10
-materialsQtd[4] = 7
-materialsQtd[5] = 15
-materialsQtd[6] = 150
-materialsQtd[7] = 33
-materialsQtd[8] = 57
-materialsQtd[9] = 0
-materialsPrice[0] = 11
-materialsPrice[1] = 1.6
-materialsPrice[2] = 5
-materialsPrice[3] = 9
-materialsPrice[4] = 14
-materialsPrice[5] = 23
-materialsPrice[6] = 1
-materialsPrice[7] = 55
-materialsPrice[8] = 3
-materialsPrice[9] = 7
-encomendas = [0] * (3)
-iD = [0] * (3)
-zonaEncomendas = [""] * (3)
-estadoEncomenda = [""] * (3)
-materiaisRequeridos = [""] * (3)
-materiaisRequeridosQtd = [0] * (3)
-zonasAtendidas = [""] * (2)
-profissionalZona = [""] * (3)
-profissionalLivre = [False] * (3)
+    print(f"\nEncomendas na zona '{zona}':")
+    for e in filtradas:
+        print(f"ID Pedido: {e.get('idPedido', 'N/A')} | Cliente: {e.get('ClienteID','N/A')} | Produto: {e.get('Produto','N/A')} | Quantidade: {e.get('Quantidade','N/A')} | Estado: {e.get('estado','N/A')} | Estafeta: {e.get('idEstafeta','N/A')}")
 
-zonasAtendidas[0] = "Braga"
-zonasAtendidas[1] = "Guimarães"
-iD[0] = 1001
-estadoEncomenda[0] = "Pendente"
-zonaEncomendas[0] = "Braga"
-materiaisRequeridos[0] = "Nivelador"
-materiaisRequeridosQtd[0] = 10
-iD[1] = 1002
-estadoEncomenda[1] = "Pendente"
-zonaEncomendas[1] = "Faro"
-materiaisRequeridos[1] = "Aparafusadora"
-materiaisRequeridosQtd[1] = 2
-iD[2] = 1003
-estadoEncomenda[2] = "Pendente"
-zonaEncomendas[2] = "Guimarães"
-materiaisRequeridos[2] = "Serra"
-materiaisRequeridosQtd[2] = 5
-tamanhoProfissionais = 3
-profissionalZona[0] = "Guimarães"
-profissionalZona[1] = "Guimarães"
-profissionalZona[2] = "Braga"
-profissionalLivre[0] = True
-profissionalLivre[1] = False
-profissionalLivre[2] = True
-i = 0
-tamanhoEncomendas = 3
-voltar = 0
-print("Bem-vindo, qual o seu nome?")
-nome = input()
-while True:    #This simulates a Do Loop
-    opçoes = mENU()
-    if opçoes == 1:
-        consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonasAtendidas)
-        print("******************************")
-        voltar = 1
-    else:
-        if opçoes == 2:
-            consultarZonas(zonasAtendidas)
-            print("******************************")
-            voltar = 1
+# ---------- Menu ----------
+def menu_gestor():
+    zonasAtendidas = ["Braga", "Guimarães"]
+    estafetas = [
+        {"idEstafeta": 1, "zona": "Guimarães", "livre": True},
+        {"idEstafeta": 2, "zona": "Guimarães", "livre": False},
+        {"idEstafeta": 3, "zona": "Braga", "livre": True}
+    ]
+
+    while True:
+        print("\n***** MENU GESTOR *****")
+        print("1 - Consultar encomendas pendentes")
+        print("2 - Aprovar e atribuir encomendas")
+        print("3 - Filtrar encomendas por zona")
+        print("4 - Sair")
+        escolha = input("Escolha uma opção: ")
+
+        if escolha == "1":
+            consultar_encomendas_pendentes()
+        elif escolha == "2":
+            aprovar_encomendas(zonasAtendidas, estafetas)
+        elif escolha == "3":
+            filtrar_encomendas_por_zona()
+        elif escolha == "4":
+            print("Sistema finalizado.")
+            break
         else:
-            if opçoes == 3:
-                consultarEstafetas(profissionalZona, profissionalLivre)
-                print("******************************")
-                voltar = 1
-            else:
-                if opçoes == 4:
-                    encomendasAprovadas()
-                    print("******************************")
-                    voltar = 1
-                else:
-                    if opçoes == 5:
-                        voltar = 0
-                    else:
-                        print("Insira um número entre 1-5")
-    if voltar != 1: break
-print("Sistema finalizado com sucesso")
+            print("Opção inválida. Escolha 1, 2, 3 ou 4.")
+
+# ---------- Execução ----------
+if __name__ == "__main__":
+    importar_pedidos_para_encomendas() 
+    menu_gestor()
