@@ -1,57 +1,87 @@
-ClienteID,Evento,Produto,Status,Destino,Timestamp
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:04:39
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-,Gestor: PENDENTE,,pendente,,2026-01-07 20:05:53
-34.0,Gestor: APROVADA,Tintas_2026-01-03 17:09:08,aprovada,Braga,2026-01-07 20:06:16
-46666666.0,Gestor: REJEITADA,Tintas,rejeitada,Braga,2026-01-07 20:07:45
-3.0,Gestor: APROVADA,Martelos,aprovada,Braga,2026-01-07 20:13:58
-saraaaaaaaaaaaaaaaaaa,Pedido Criado,Martelos,Confirmado,Fafe,2026-01-07 20:22:06
-saraaaaaaaaaaaaaaaaaa,Gestor: PENDENTE,Martelos,pendente,Fafe,2026-01-07 20:22:22
-saraaaaaaaaaaaaaaaaaa,Gestor: APROVADA,Martelos,aprovada,Fafe,2026-01-07 20:23:28
+PedidoID,ClienteID,Estado,Descricao,Timestamp,Tracking
+,unknown,,,2025-12-09 15:28:24,2025-12-09 15:28:24 →
+,unknown,,,2025-12-09 15:38:04,2025-12-09 15:38:04 →
+,unknown,,,2025-12-11 11:05:13,2025-12-11 11:05:13 →
+,unknown,,,2025-12-11 11:42:09,2025-12-11 11:42:09 →
+,unknown,,,2025-12-11 12:29:55,2025-12-11 12:29:55 →
+,2,,,2025-12-17 19:47:21,2025-12-17 19:47:21 →
+,6,,,2025-12-17 19:48:32,2025-12-17 19:48:32 →
+,6,,,2025-12-18 12:06:44,2025-12-18 12:06:44 →
+cliente_teste_001_20251218225740,cliente_teste_001,Criado,Pedido criado com 3 produtos para Braga,2025-12-18 22:57:40,2025-12-18 22:57:40 → Criado
+cliente_teste_001_20251218225740,cliente_teste_001,Confirmado,Pedido confirmado. Total: 50€,2025-12-18 22:57:40,2025-12-18 22:57:40 → Confirmado
+cliente_teste_001_20251218225740,cliente_teste_001,Aprovado,Pedido aprovado pelo gestor,2025-12-18 22:57:40,2025-12-18 22:57:40 → Aprovado
+cliente_teste_001_20251218225740,cliente_teste_001,Em Processamento,Começou o processamento,2025-12-18 22:57:40,2025-12-18 22:57:40 → Em Processamento
+2_20251218230300,2,Criado,Pedido criado com 1 produtos para Fafe,2025-12-18 23:03:00,2025-12-18 23:03:00 → Criado
+2_20251218230300,2,Confirmado,Pedido confirmado. Total: 11.0€,2025-12-18 23:03:00,2025-12-18 23:03:00 → Confirmado
+,2,,,2025-12-18 23:03:00,2025-12-18 23:03:00 →
+2,2,Entregue,O cliente acabou de receber em casa.,2025-12-18 23:06:53,2025-12-18 23:06:53 → Entregue
+5_20251218230844,5,Criado,Pedido criado com 1 produtos para Braga,2025-12-18 23:08:44,2025-12-18 23:08:44 → Criado
+5_20251218230844,5,Confirmado,Pedido confirmado. Total: 11.0€,2025-12-18 23:08:44,2025-12-18 23:08:44 → Confirmado
+,5,,,2025-12-18 23:08:44,2025-12-18 23:08:44 →
+7_20251218231147,7,Criado,Pedido criado com 1 produtos para Guimarães,2025-12-18 23:11:47,2025-12-18 23:11:47 → Criado
+7_20251218231147,7,Confirmado,Pedido confirmado. Total: 3.2€,2025-12-18 23:11:47,2025-12-18 23:11:47 → Confirmado
+,7,,,2025-12-18 23:11:47,2025-12-18 23:11:47 →
+3_20251218231423,3,Criado,Pedido criado com 1 produtos para Braga,2025-12-18 23:14:23,2025-12-18 23:14:23 → Criado
+3_20251218231423,3,Confirmado,Pedido confirmado. Total: 5.0€,2025-12-18 23:14:23,2025-12-18 23:14:23 → Confirmado
+,3,,,2025-12-18 23:14:23,2025-12-18 23:14:23 →
+3,5,Em Distribuição,Foi entregue á transportadora,2025-12-18 23:16:42,2025-12-18 23:16:42 → Em Distribuição
+11_20251218233344,11,Criado,Pedido criado com 1 produtos para Braga,2025-12-18 23:33:44,2025-12-18 23:33:44 → Criado
+11_20251218233344,11,Confirmado,Pedido confirmado. Total: 11.0€,2025-12-18 23:33:44,2025-12-18 23:33:44 → Confirmado
+,11,,,2025-12-18 23:33:44,2025-12-18 23:33:44 →
+10,11,Aprovado,fefv,2025-12-18 23:34:28,2025-12-18 23:34:28 → Aprovado
+12_20251218233917,12,Criado,Pedido criado com 1 produtos para Braga,2025-12-18 23:39:17,2025-12-18 23:39:17 → Criado
+12_20251218233917,12,Confirmado,Pedido confirmado. Total: 11.0€,2025-12-18 23:39:17,2025-12-18 23:39:17 → Confirmado
+,12,,,2025-12-18 23:39:17,2025-12-18 23:39:17 →
+12,gestor,Em Distribuição,Foi entregue á transportadora,2025-12-18 23:40:27,2025-12-18 23:40:27 → Em Distribuição
+111_20251218235012,111,Criado,Pedido criado com 1 produtos para Braga,2025-12-18 23:50:12,2025-12-18 23:50:12 → Criado
+111_20251218235012,111,Confirmado,Pedido confirmado. Total: 22.0€,2025-12-18 23:50:12,2025-12-18 23:50:12 → Confirmado
+,111,,,2025-12-18 23:50:12,2025-12-18 23:50:12 →
+111,gestor,Em Distribuição,foi entregue á transportadora,2025-12-18 23:50:41,2025-12-18 23:50:41 → Em Distribuição
+13_20251228211349,13,Criado,Pedido criado com 1 produtos para Guimarães,2025-12-28 21:13:49,2025-12-28 21:13:49 → Criado
+13_20251228211349,13,Confirmado,Pedido confirmado. Total: 22.0€,2025-12-28 21:13:49,2025-12-28 21:13:49 → Confirmado
+,13,,,2025-12-28 21:13:49,2025-12-28 21:13:49 →
+13,gestor,Em Distribuição,d,2025-12-28 21:14:20,2025-12-28 21:14:20 → Em Distribuição
+1998_20251228213057,1998,Criado,Pedido criado com 1 produtos para Braga,2025-12-28 21:30:57,2025-12-28 21:30:57 → Criado
+1998_20251228213057,1998,Confirmado,Pedido confirmado. Total: 11.0€,2025-12-28 21:30:57,2025-12-28 21:30:57 → Confirmado
+1998,gestor,Entregue,sigaa,2025-12-28 21:31:50,2025-12-28 21:31:50 → Entregue
+95_20251228214517,95,Criado,Pedido criado com 1 produtos para Braga,2025-12-28 21:45:17,2025-12-28 21:45:17 → Criado
+95_20251228214517,95,Confirmado,Pedido confirmado. Total: 22.0€,2025-12-28 21:45:17,2025-12-28 21:45:17 → Confirmado
+95_20251228214517,95,Entregue,confir,2025-12-28 21:45:47,2025-12-28 21:45:47 → Entregue
+1998_20251228213057,1998,Cancelado,Pedido cancelado pelo cliente. Motivo: não tinha stock,2025-12-28 21:56:41,2025-12-28 21:56:41 → Cancelado
+1999_20251228222353,1999,Criado,Pedido criado com 1 produtos para Guimarães,2025-12-28 22:23:53,2025-12-28 22:23:53 → Criado
+1999_20251228222353,1999,Confirmado,Pedido confirmado. Total: 22.0€,2025-12-28 22:23:53,2025-12-28 22:23:53 → Confirmado
+1999_20251228222353,1999,Em Processamento,test,2025-12-28 22:24:46,2025-12-28 22:24:46 → Em Processamento
+1999_20251228222353,1999,Entregue,Entregue,2025-12-28 22:30:45,2025-12-28 22:30:45 → Entregue
+111_20260104220644,111,Criado,Pedido criado com 1 produtos para Braga,2026-01-04 22:06:44,2026-01-04 22:06:44 → Criado
+111_20260104220644,111,Confirmado,Pedido confirmado. Total: 22.0€,2026-01-04 22:06:45,2026-01-04 22:06:45 → Confirmado
+4_20260104223336,4,Criado,Pedido criado com 1 produtos para Fafe,2026-01-04 22:33:36,2026-01-04 22:33:36 → Criado
+4_20260104223336,4,Confirmado,Pedido confirmado. Total: 22.0€,2026-01-04 22:33:36,2026-01-04 22:33:36 → Confirmado
+4_20260104223336,4,Entregue,,2026-01-04 22:34:31,2026-01-04 22:34:31 → Entregue
+111_20260104220644,111,Em Distribuição,Chegou á transportadora,2026-01-04 22:47:45,2026-01-04 22:47:45 → Em Distribuição
+18_20260104225544,18,Criado,Pedido criado com 2 produtos para Guimarães,2026-01-04 22:55:44,2026-01-04 22:55:44 → Criado
+18_20260104225544,18,Confirmado,Pedido confirmado. Total: 26.8€,2026-01-04 22:55:44,2026-01-04 22:55:44 → Confirmado
+18_20260104225544,18,Cancelado,Pedido cancelado pelo cliente. Motivo: não quero mais,2026-01-04 22:55:56,2026-01-04 22:55:56 → Cancelado
+111_20260104220644,111,Entregue,Finalizado,2026-01-04 23:04:25,2026-01-04 23:04:25 → Entregue
+111_20260104220644,111,Entregue,Feito,2026-01-04 23:11:16,2026-01-04 23:11:16 → Entregue
+111_20260104231623,111,Criado,Pedido criado com 1 produtos para Guimarães,2026-01-04 23:16:23,2026-01-04 23:16:23 → Criado
+111_20260104231623,111,Confirmado,Pedido confirmado. Total: 10.0€,2026-01-04 23:16:23,2026-01-04 23:16:23 → Confirmado
+110_20260107173810,110,Criado,Pedido criado com 1 produtos para Braga,2026-01-07 17:38:10,2026-01-07 17:38:10 → Criado
+110_20260107173810,110,Confirmado,Pedido confirmado. Total: 22.0€,2026-01-07 17:38:10,2026-01-07 17:38:10 → Confirmado
+110_20260107173810,110,Em Distribuição,Foi entregue á transportadora,2026-01-07 17:39:02,2026-01-07 17:39:02 → Em Distribuição
+110_20260107173810,110,Cancelado,não quero,2026-01-07 17:40:10,2026-01-07 17:40:10 → Cancelado
+200_20260107182935,200,Criado,Pedido criado com 1 produtos para Fafe,2026-01-07 18:29:35,2026-01-07 18:29:35 → Criado
+200_20260107182935,200,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-07 18:29:35,2026-01-07 18:29:35 → Confirmado
+200_20260107182935,200,Em Processamento,o pedido esta a ser feito,2026-01-07 18:37:47,2026-01-07 18:37:47 → Em Processamento
+201_20260107184600,201,Criado,Pedido criado com 1 produtos para Fafe,2026-01-07 18:46:00,2026-01-07 18:46:00 → Criado
+201_20260107184600,201,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-07 18:46:00,2026-01-07 18:46:00 → Confirmado
+201_20260107184600,201,Cancelado,Pedido cancelado pelo cliente. Motivo: nao quero,2026-01-07 18:46:12,2026-01-07 18:46:12 → Cancelado
+200_20260107182935,200,Entregue,feito,2026-01-07 18:54:29,2026-01-07 18:54:29 → Entregue
+103_20260107185856,103,Criado,Pedido criado com 1 produtos para Fafe,2026-01-07 18:58:56,2026-01-07 18:58:56 → Criado
+103_20260107185856,103,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-07 18:58:56,2026-01-07 18:58:56 → Confirmado
+103_20260107185856,103,Entregue,feito,2026-01-07 18:59:16,2026-01-07 18:59:16 → Entregue
+404_20260107190551,404,Criado,Pedido criado com 1 produtos para Fafe,2026-01-07 19:05:51,2026-01-07 19:05:51 → Criado
+404_20260107190551,404,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-07 19:05:52,2026-01-07 19:05:52 → Confirmado
+104,gestor,Entregue,feito,2026-01-07 19:06:27,2026-01-07 19:06:27 → Entregue
+155_20260107192001,155,Criado,Pedido criado com 1 produtos para Fafe,2026-01-07 19:20:01,2026-01-07 19:20:01 → Criado
+155_20260107192001,155,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-07 19:20:01,2026-01-07 19:20:01 → Confirmado
+155_20260107192001,155,Entregue,feito,2026-01-07 19:20:32,2026-01-07 19:20:32 → Entregue

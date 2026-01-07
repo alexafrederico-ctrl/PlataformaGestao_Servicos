@@ -43,9 +43,38 @@ gestor,Atualização de Estado,Pedido 1998: Estado alterado de 'Desconhecido' pa
 1999,Confirmação,Pedido confirmado para Guimarães - Total: 22.0€,2025-12-28 22:23:53
 1999,Atualização de Estado,Pedido 1999_20251228222353: Estado alterado de 'Confirmado' para 'Em Processamento' - test,2025-12-28 22:24:46
 1999,Atualização de Estado,Pedido 1999_20251228222353: Estado alterado de 'Em Processamento' para 'Entregue' - Entregue,2025-12-28 22:30:45
-2,Confirmação,Pedido confirmado para Fafe - Total: 21.0€,2026-01-03 16:34:28
-34,Confirmação,Pedido confirmado para Braga - Total: 33.0€,2026-01-03 17:09:08
-3,Confirmação,Pedido confirmado para Guimarães - Total: 10.0€,2026-01-03 17:12:53
-46666666,Confirmação,Pedido confirmado para Braga - Total: 391226.0€,2026-01-03 17:16:03
-sara,Confirmação,Pedido confirmado para Braga - Total: 4.800000000000001€,2026-01-03 19:02:19
-saraaaaaaaaaaaaaaaaaa,Confirmação,Pedido confirmado para Fafe - Total: 30.0€,2026-01-07 20:22:06
+111,Atualização de Estado,Pedido 111_20260104220644: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-04 22:06:45
+111,Confirmação,Pedido confirmado para Braga - Total: 22.0€,2026-01-04 22:06:45
+4,Atualização de Estado,Pedido 4_20260104223336: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-04 22:33:36
+4,Confirmação,Pedido confirmado para Fafe - Total: 22.0€,2026-01-04 22:33:36
+4,Atualização de Estado,Pedido 4_20260104223336: Estado alterado de 'Confirmado' para 'Entregue',2026-01-04 22:34:31
+111,Atualização de Estado,Pedido 111_20260104220644: Estado alterado de 'Confirmado' para 'Em Distribuição' - Chegou á transportadora,2026-01-04 22:47:45
+18,Atualização de Estado,Pedido 18_20260104225544: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 26.8€,2026-01-04 22:55:44
+18,Confirmação,Pedido confirmado para Guimarães - Total: 26.8€,2026-01-04 22:55:44
+18,Atualização de Estado,Pedido 18_20260104225544: Estado alterado de 'Confirmado' para 'Cancelado' - Pedido cancelado pelo cliente. Motivo: não quero mais,2026-01-04 22:55:56
+111,Atualização de Estado,Pedido 111_20260104220644: Estado alterado de 'Em Distribuição' para 'Entregue' - Finalizado,2026-01-04 23:04:25
+111,Atualização de Estado,Pedido 111_20260104220644: Estado alterado de 'Entregue' para 'Entregue' - Feito,2026-01-04 23:11:16
+111,Atualização de Estado,Pedido 111_20260104231623: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 10.0€,2026-01-04 23:16:23
+111,Confirmação,Pedido confirmado para Guimarães - Total: 10.0€,2026-01-04 23:16:23
+111,Atualização de Estado,Pedido 111_20260107171645: Estado alterado de 'entregue' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 17:16:45
+111,Atualização de Estado,Pedido 111_20260107171645: Estado alterado de 'entregue' para 'Em Distribuição' - dd,2026-01-07 17:25:25
+111,Atualização de Estado,Pedido 111_20260107171645: Estado alterado de 'entregue' para 'Cancelado' - d,2026-01-07 17:35:14
+110,Atualização de Estado,Pedido 110_20260107173810: Estado alterado de 'Desconhecido' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-07 17:38:10
+110,Atualização de Estado,Pedido 110_20260107173810: Estado alterado de 'Desconhecido' para 'Em Distribuição' - Foi entregue á transportadora,2026-01-07 17:39:02
+110,Atualização de Estado,Pedido 110_20260107173810: Estado alterado de 'Desconhecido' para 'Cancelado' - não quero,2026-01-07 17:40:10
+200,Atualização de Estado,Pedido 200_20260107182935: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 18:29:35
+200,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-07 18:29:35
+200,Atualização de Estado,Pedido 200_20260107182935: Estado alterado de 'Confirmado' para 'Em Processamento' - o pedido esta a ser feito,2026-01-07 18:37:47
+201,Atualização de Estado,Pedido 201_20260107184600: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 18:46:00
+201,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-07 18:46:00
+201,Atualização de Estado,Pedido 201_20260107184600: Estado alterado de 'Confirmado' para 'Cancelado' - Pedido cancelado pelo cliente. Motivo: nao quero,2026-01-07 18:46:12
+200,Atualização de Estado,Pedido 200_20260107182935: Estado alterado de 'Em Processamento' para 'Entregue' - feito,2026-01-07 18:54:29
+103,Atualização de Estado,Pedido 103_20260107185856: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 18:58:56
+103,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-07 18:58:56
+103,Atualização de Estado,Pedido 103_20260107185856: Estado alterado de 'Confirmado' para 'Entregue' - feito,2026-01-07 18:59:16
+404,Atualização de Estado,Pedido 404_20260107190551: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 19:05:52
+404,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-07 19:05:52
+gestor,Atualização de Estado,Pedido 104: Estado alterado de 'Desconhecido' para 'Entregue' - feito,2026-01-07 19:06:27
+155,Atualização de Estado,Pedido 155_20260107192001: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 19:20:01
+155,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-07 19:20:01
+155,Atualização de Estado,Pedido 155_20260107192001: Estado alterado de 'Confirmado' para 'Entregue' - feito,2026-01-07 19:20:32
