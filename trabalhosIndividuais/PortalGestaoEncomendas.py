@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 import os
 
-# ================= CONSTANTES E CONFIGURAÇÃO =================
+# ================= CONSTANTES =================
 
 ESTADOS_FINAIS = ["rejeitada", "cancelada", "concluida"]
 
@@ -16,7 +16,7 @@ COL_EVENTOS = ["ClienteID", "Evento", "Produto", "Status", "Destino", "Timestamp
 COL_ATRIBUICOES = ["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao"]
 COL_ESTAFETAS = ["idEstafeta", "nome", "zona", "disponibilidade", "carga_trabalho"]
 
-# ================= UTILITÁRIOS CSV =================
+# ================= CSV =================
 
 def garantir_csv(nome, colunas):
     if not os.path.exists(nome):
@@ -50,7 +50,7 @@ def obter_proximo_id(ficheiro, campo):
             ids.append(int(valor))
     return max(ids) + 1 if ids else 1
 
-# ================= GESTÃO DE EVENTOS (Correção: Preserva histórico) =================
+# ================= GESTÃO DE EVENTOS  =================
 
 def registar_evento(idPedido, novo_estado):
     """
