@@ -75,3 +75,6 @@ gestor,Atualização de Estado,Pedido 1998: Estado alterado de 'Desconhecido' pa
 404,Atualização de Estado,Pedido 404_20260107190551: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 19:05:52
 404,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-07 19:05:52
 gestor,Atualização de Estado,Pedido 104: Estado alterado de 'Desconhecido' para 'Entregue' - feito,2026-01-07 19:06:27
+155,Atualização de Estado,Pedido 155_20260107192001: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-07 19:20:01
+155,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-07 19:20:01
+155,Atualização de Estado,Pedido 155_20260107192001: Estado alterado de 'Confirmado' para 'Entregue' - feito,2026-01-07 19:20:32

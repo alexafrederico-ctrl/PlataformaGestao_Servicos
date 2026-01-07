@@ -29,3 +29,4 @@ PedidoID,ClienteID,Produto,Quantidade,Preço_Unitário,Preço_Total,Destino,Aval
 201_20260107184600,201,Parafusos,2.0,1.6,3.2,Fafe,,2026-01-07 18:46:00,Cancelado
 103_20260107185856,103,Parafusos,2.0,1.6,3.2,Fafe,,2026-01-07 18:58:56,Entregue
 404_20260107190551,404,Parafusos,2.0,1.6,3.2,Fafe,,2026-01-07 19:05:52,Confirmado
+155_20260107192001,155,Parafusos,2.0,1.6,3.2,Fafe,,2026-01-07 19:20:01,Entregue

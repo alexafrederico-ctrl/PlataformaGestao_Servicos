@@ -1387,7 +1387,7 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
                 novo_estado = ESTADOS_PEDIDO[opcao_estado]
                 descricao = input("Descrição da alteração (opcional): ").strip()
 
-                cliente_id = "gestor"
+                cliente_id = pedido_id.split("_", 1)[0] if "_" in pedido_id else pedido_id
                 try:
                     df_eventos = _normalizar_eventos_schema(load_eventos())
                     if df_eventos is not None and not df_eventos.empty:
@@ -1395,7 +1395,7 @@ def gestor_main(produtosNome, produtosQtd, produtosPreco):
                         if not evs.empty:
                             cliente_id = str(evs.iloc[0].get('ClienteID', cliente_id)).strip() or cliente_id
                 except Exception:
-                    cliente_id = "gestor"
+                    cliente_id = pedido_id.split("_", 1)[0] if "_" in pedido_id else pedido_id
 
                 sucesso = alterar_estado_pedido(pedido_id, novo_estado, cliente_id, descricao)
                 if sucesso:

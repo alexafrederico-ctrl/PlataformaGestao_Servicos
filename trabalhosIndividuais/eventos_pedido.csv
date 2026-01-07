@@ -82,3 +82,6 @@ cliente_teste_001_20251218225740,cliente_teste_001,Em Processamento,Começou o p
 404_20260107190551,404,Criado,Pedido criado com 1 produtos para Fafe,2026-01-07 19:05:51,2026-01-07 19:05:51 → Criado
 404_20260107190551,404,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-07 19:05:52,2026-01-07 19:05:52 → Confirmado
 104,gestor,Entregue,feito,2026-01-07 19:06:27,2026-01-07 19:06:27 → Entregue
+155_20260107192001,155,Criado,Pedido criado com 1 produtos para Fafe,2026-01-07 19:20:01,2026-01-07 19:20:01 → Criado
+155_20260107192001,155,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-07 19:20:01,2026-01-07 19:20:01 → Confirmado
+155_20260107192001,155,Entregue,feito,2026-01-07 19:20:32,2026-01-07 19:20:32 → Entregue
