@@ -66,6 +66,7 @@ def registar_evento(idPedido, novo_estado):
     encomendas = ler_csv("encomendas.csv")
 
     enc = next((e for e in encomendas if str(e["id"]) == str(idPedido)), {})
+    
 
     eventos.append({
         "ClienteID": enc.get("idCliente", "N/A"),
@@ -180,6 +181,7 @@ def cancelar_editar_encomenda():
 
     id_alvo = input("\nID da encomenda a gerir: ").strip()
     enc = next((e for e in encomendas if str(e["id"]) == id_alvo), None)
+    
 
     if not enc:
         print("ID não encontrado.")
