@@ -4,30 +4,42 @@ import os
 
 # ================= CONSTANTES =================
 
-ESTADOS_FINAIS = ["rejeitada", "cancelada", "concluida"]
+ESTADO_PENDENTE   = "pendente"
+ESTADO_APROVADA   = "aprovada"
+ESTADO_REJEITADA  = "rejeitada"
+ESTADO_CANCELADA  = "cancelada"
+ESTADO_ATRIBUIDA  = "atribuida"
+
+ESTADOS = [
+    ESTADO_PENDENTE,
+    ESTADO_APROVADA,
+    ESTADO_REJEITADA,
+    ESTADO_CANCELADA,
+    ESTADO_ATRIBUIDA
+]
 
 COL_ENCOMENDAS = [
     "id", "idOriginal", "idCliente", "origem", "destino", "dataCriacao",
     "janelaInicio", "janelaFim", "duracaoEstimadaMin",
     "zona", "prioridade", "estado", "idEstafeta", "produto"
 ]
-COL_EVENTOS = ["ClienteID", "Evento", "Produto", "Status", "Destino", "Timestamp"]
 
+COL_EVENTOS = ["ClienteID", "Evento", "Produto", "Status", "Destino", "Timestamp"]
 COL_ATRIBUICOES = ["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao"]
 COL_ESTAFETAS = ["idEstafeta", "nome", "zona", "disponibilidade", "carga_trabalho"]
 
 # ================= CSV =================
 
-def garantir_csv(nome, colunas):
+def criar_csv(nome, colunas):
     if not os.path.exists(nome):
         with open(nome, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=colunas)
             writer.writeheader()
 
 def ler_csv(nome):
-    if not os.path.exists(nome): return []
+    if not os.path.exists(nome):
+        return []
     try:
-    
         with open(nome, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f, skipinitialspace=True)
             return [{k.strip(): v.strip() for k, v in linha.items() if k is not None} for linha in reader]
@@ -42,58 +54,48 @@ def guardar_csv(nome, colunas, dados):
 
 def obter_proximo_id(ficheiro, campo):
     dados = ler_csv(ficheiro)
-    if not dados: return 1
-    ids = []
-    for d in dados:
-        valor = d.get(campo)
-        if valor and str(valor).isdigit():
-            ids.append(int(valor))
+    ids = [int(d[campo]) for d in dados if d.get(campo, "").isdigit()]
     return max(ids) + 1 if ids else 1
 
-# ================= GESTÃO DE EVENTOS  =================
+# ================= EVENTOS =================
 
 def registar_evento(idPedido, novo_estado):
-    """
-    Lê o ficheiro de eventos existente e faz APPEND do novo evento do gestor,
-    garantindo que os eventos criados pelo PortalCliente não são apagados.
-    """
-    garantir_csv("eventos_pedido.csv", COL_EVENTOS)
-    
-    eventos_totais = ler_csv("eventos_pedido.csv")
-    
+    criar_csv("eventos_pedido.csv", COL_EVENTOS)
+
+    eventos = ler_csv("eventos_pedido.csv")
     encomendas = ler_csv("encomendas.csv")
+
     enc = next((e for e in encomendas if str(e["id"]) == str(idPedido)), {})
 
-    novo_evento = {
+    eventos.append({
         "ClienteID": enc.get("idCliente", "N/A"),
         "Evento": f"Gestor: {novo_estado.upper()}",
-        "Produto": enc.get("produto", "N/A"), 
+        "Produto": enc.get("produto", "N/A"),
         "Status": novo_estado,
         "Destino": enc.get("zona", "N/A"),
         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    
-    eventos_totais.append(novo_evento)
+    })
 
-    guardar_csv("eventos_pedido.csv", COL_EVENTOS, eventos_totais)
+    guardar_csv("eventos_pedido.csv", COL_EVENTOS, eventos)
 
 # ================= IMPORTAÇÃO =================
 
 def importar_pedidos_do_cliente():
-    if not os.path.exists("pedidos.csv"): return
+    if not os.path.exists("pedidos.csv"):
+        return
 
     pedidos_brutos = ler_csv("pedidos.csv")
     encomendas_atuais = ler_csv("encomendas.csv")
-    
+
     processados = [e.get("idOriginal") for e in encomendas_atuais]
     next_id = obter_proximo_id("encomendas.csv", "id")
     alterou = False
 
     for p in pedidos_brutos:
         id_unico = f"{p.get('Produto')}_{p.get('Data')}"
-        
+
         if id_unico not in processados:
-            nova = {
+            encomendas_atuais.append({
                 "id": next_id,
                 "idOriginal": id_unico,
                 "idCliente": p.get("ClienteID", "Desconhecido"),
@@ -106,16 +108,11 @@ def importar_pedidos_do_cliente():
                 "duracaoEstimadaMin": "30",
                 "zona": p.get("Destino", "N/A"),
                 "prioridade": "Normal",
-                "estado": "pendente",
+                "estado": ESTADO_PENDENTE,
                 "idEstafeta": ""
-            }
-            encomendas_atuais.append(nova)
- 
-            guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas_atuais)
-            
+            })
 
-            registar_evento(next_id, "pendente")
-            
+            registar_evento(next_id, ESTADO_PENDENTE)
             processados.append(id_unico)
             next_id += 1
             alterou = True
@@ -123,7 +120,7 @@ def importar_pedidos_do_cliente():
     if alterou:
         guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas_atuais)
 
-# ================= FUNCIONALIDADES PRINCIPAIS =================
+# ================= FUNCIONALIDADES =================
 
 def listar_todas():
     encomendas = ler_csv("encomendas.csv")
@@ -131,20 +128,22 @@ def listar_todas():
         print("\nNão existem encomendas registadas.")
         return
 
-    print("\n" + "="*110)
+    print("\n" + "=" * 110)
     header = f"{'ID':<4} | {'Cliente':<10} | {'Produto':<12} | {'Zona':<12} | {'Estado':<10} | {'Prioridade':<10} | {'Estafeta'}"
     print(header)
     print("-" * 110)
+
     for e in encomendas:
-        estafeta = e.get('idEstafeta') if e.get('idEstafeta') else "---"
-        print(f"{e.get('id',''):<4} | {e.get('idCliente',''):<10} | {e.get('produto',''):<12} | "
-              f"{e.get('zona',''):<12} | {e.get('estado',''):<10} | {e.get('prioridade',''):<10} | {estafeta}")
-    print("="*110)
+        estafeta = e.get("idEstafeta") if e.get("idEstafeta") else "---"
+        print(f"{e['id']:<4} | {e['idCliente']:<10} | {e['produto']:<12} | "
+              f"{e['zona']:<12} | {e['estado']:<10} | {e['prioridade']:<10} | {estafeta}")
+
+    print("=" * 110)
 
 def aprovar_rejeitar_pedidos(zonas_atendidas):
     while True:
         encomendas = ler_csv("encomendas.csv")
-        pendentes = [e for e in encomendas if e["estado"] == "pendente"]
+        pendentes = [e for e in encomendas if e["estado"] == ESTADO_PENDENTE]
 
         if not pendentes:
             print("\nNenhum pedido pendente.")
@@ -156,27 +155,28 @@ def aprovar_rejeitar_pedidos(zonas_atendidas):
             print(f"ID: {e['id']} | Produto: {e['produto']} | Zona: {e['zona']} | Sugestão: {sug}")
 
         escolha = input("\nID para tratar (ou 's' para sair): ").strip()
-        if escolha.lower() == 's': break
+        if escolha.lower() == 's':
+            break
 
         alvo = next((e for e in pendentes if str(e["id"]) == escolha), None)
-        if alvo:
-            op = input("1-Aprovar, 2-Rejeitar, 3-Voltar: ")
-            if op == '1':
-                alvo["estado"] = "aprovada"
-                guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
-                registar_evento(alvo["id"], "aprovada")
-                print("✓ Aprovada!")
-            elif op == '2':
-                alvo["estado"] = "rejeitada"
-                guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
-                registar_evento(alvo["id"], "rejeitada")
-                print("X Rejeitada!")
-        else:
+        if not alvo:
             print("ID inválido.")
+            continue
+
+        op = input("1-Aprovar, 2-Rejeitar, 3-Voltar: ")
+        if op == "1":
+            alvo["estado"] = ESTADO_APROVADA
+            registar_evento(alvo["id"], ESTADO_APROVADA)
+        elif op == "2":
+            alvo["estado"] = ESTADO_REJEITADA
+            registar_evento(alvo["id"], ESTADO_REJEITADA)
+
+        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
 
 def cancelar_editar_encomenda():
     encomendas = ler_csv("encomendas.csv")
-    if not encomendas: return
+    if not encomendas:
+        return
 
     id_alvo = input("\nID da encomenda a gerir: ").strip()
     enc = next((e for e in encomendas if str(e["id"]) == id_alvo), None)
@@ -185,105 +185,122 @@ def cancelar_editar_encomenda():
         print("ID não encontrado.")
         return
 
-    if enc["estado"] not in ["pendente", "aprovada"]:
+    if enc["estado"] not in [ESTADO_PENDENTE]:
         print(f"Não pode editar uma encomenda '{enc['estado']}'.")
         return
 
-    print(f"\n1. Cancelar Encomenda\n2. Editar (Zona/Prioridade)\n3. Voltar")
+    print("\n1. Cancelar Encomenda\n2. Editar (Zona/Prioridade)\n3. Voltar")
     opcao = input("Opção: ")
 
     if opcao == "1":
-        enc["estado"] = "cancelada"
-        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
-        registar_evento(id_alvo, "cancelada")
+        enc["estado"] = ESTADO_CANCELADA
+        registar_evento(id_alvo, ESTADO_CANCELADA)
         print("✓ Cancelada.")
     elif opcao == "2":
         nova_zona = input(f"Nova Zona [{enc['zona']}]: ").strip()
         nova_prio = input(f"Nova Prioridade [{enc['prioridade']}]: ").strip()
-        if nova_zona: enc["zona"] = nova_zona
-        if nova_prio: enc["prioridade"] = nova_prio
-        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+        if nova_zona:
+            enc["zona"] = nova_zona
+        if nova_prio:
+            enc["prioridade"] = nova_prio
         print("✓ Atualizada.")
+
+    guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
 
 def filtrar_encomendas():
     encomendas = ler_csv("encomendas.csv")
     print("\nFiltrar por: 1-Estado | 2-Zona | 3-Cliente | 4-Produto")
     op = input("Opção: ")
+
     mapeamento = {"1": "estado", "2": "zona", "3": "idCliente", "4": "produto"}
     campo = mapeamento.get(op)
-    
+
     if campo:
         valor = input(f"Valor para {campo}: ").strip().lower()
-        res = [e for e in encomendas if valor in e.get(campo, "").lower()]
-        if res:
-            print(f"\nEncontradas {len(res)} encomendas:")
-            for r in res:
-                print(f"ID {r['id']} | {r['produto']} | {r['zona']} | {r['estado']}")
+        resultados = [e for e in encomendas if valor in e.get(campo, "").lower()]
+
+        if resultados:
+            print(f"\nEncontradas {len(resultados)} encomendas:")
+            for r in resultados:
+                print(f"ID {r['id']} | Nome {r['idCliente']} |  {r['produto']} | {r['zona']} | {r['estado']}")
         else:
             print("Nenhum resultado.")
 
 def atribuir_estafetas():
     encomendas = ler_csv("encomendas.csv")
     estafetas = ler_csv("estafetas.csv")
-    garantir_csv("atribuicoes.csv", COL_ATRIBUICOES)
+
+    criar_csv("atribuicoes.csv", COL_ATRIBUICOES)
     atribuicoes = ler_csv("atribuicoes.csv")
-    
+
     proximo_atrib = obter_proximo_id("atribuicoes.csv", "idAtribuicao")
     alterou = False
 
     for e in encomendas:
-        if e["estado"] == "aprovada":
-            elegiveis = [s for s in estafetas if s["zona"].lower() == e["zona"].lower() and s["disponibilidade"].lower() == "true"]
+        if e["estado"] == ESTADO_APROVADA:
+            elegiveis = [
+                s for s in estafetas
+                if s["zona"].lower() == e["zona"].lower()
+                and s["disponibilidade"].lower() == "true"
+            ]
+
             if elegiveis:
                 escolhido = min(elegiveis, key=lambda x: int(x["carga_trabalho"]))
-                e["estado"] = "atribuida"
+                e["estado"] = ESTADO_ATRIBUIDA
                 e["idEstafeta"] = escolhido["idEstafeta"]
                 escolhido["carga_trabalho"] = str(int(escolhido["carga_trabalho"]) + 1)
-                
+
                 atribuicoes.append({
                     "idAtribuicao": proximo_atrib,
                     "idPedido": e["id"],
                     "idEstafeta": escolhido["idEstafeta"],
                     "dataAtribuicao": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
+
+                registar_evento(e["id"], ESTADO_ATRIBUIDA)
                 proximo_atrib += 1
-                
-                guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
-                registar_evento(e["id"], "atribuida")
                 alterou = True
-                print(f"✓ Encomenda {e['id']} atribuída a {escolhido['nome']}")
 
     if alterou:
+        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
         guardar_csv("estafetas.csv", COL_ESTAFETAS, estafetas)
         guardar_csv("atribuicoes.csv", COL_ATRIBUICOES, atribuicoes)
 
-# ================= MENU PRINCIPAL =================
+# ================= MENU =================
 
 def menu():
-    garantir_csv("encomendas.csv", COL_ENCOMENDAS)
-    garantir_csv("eventos_pedido.csv", COL_EVENTOS)
-    
+    criar_csv("encomendas.csv", COL_ENCOMENDAS)
+    criar_csv("eventos_pedido.csv", COL_EVENTOS)
+
     ZONAS_ATENDIDAS = ["Braga", "Guimarães", "Famalicão", "Fafe"]
 
     while True:
         importar_pedidos_do_cliente()
-        print("\n" + "="*40)
+
+        print("\n" + "=" * 40)
         print("     SISTEMA DE GESTÃO DE ENCOMENDAS")
-        print("="*40)
+        print("=" * 40)
         print("1. Aprovar/Rejeitar Pedidos")
         print("2. Atribuir Estafetas")
         print("3. Cancelar/Editar Encomenda")
         print("4. Filtrar Encomendas")
-        print("5. Consultar Todas as Encomendas")
+        print("5. Consultar todas as Encomendas")
         print("6. Sair")
-        
+
         op = input("\nOpção: ")
-        if op == "1": aprovar_rejeitar_pedidos(ZONAS_ATENDIDAS)
-        elif op == "2": atribuir_estafetas()
-        elif op == "3": cancelar_editar_encomenda()
-        elif op == "4": filtrar_encomendas()
-        elif op == "5": listar_todas()
-        elif op == "6": break
+
+        if op == "1":
+            aprovar_rejeitar_pedidos(ZONAS_ATENDIDAS)
+        elif op == "2":
+            atribuir_estafetas()
+        elif op == "3":
+            cancelar_editar_encomenda()
+        elif op == "4":
+            filtrar_encomendas()
+        elif op == "5":
+            listar_todas()
+        elif op == "6":
+            break
 
 if __name__ == "__main__":
     menu()

@@ -1,4 +1,4 @@
-idEstafeta,nome,zona,turno,livre,carga_trabalho
+idEstafeta,nome,zona,turno,disponibilidade,carga_trabalho
 1,Mari,braga,noite,livre,0
 2,Joao,braga,dia,livre,0
 3,Sara,guimaraes,dia,livre,0

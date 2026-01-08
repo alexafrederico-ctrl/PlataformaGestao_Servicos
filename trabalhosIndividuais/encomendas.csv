@@ -1,3 +1,4 @@
+3
 id,idOriginal,idCliente,origem,destino,dataCriacao,janelaInicio,janelaFim,duracaoEstimadaMin,zona,prioridade,estado,idEstafeta,produto
 1,Parafusos_2025-12-09 15:28:24,unknown,Loja Online,Fafe,2025-12-09 15:28:24,09:00,18:00,30,Fafe,Normal,pendente,,Parafusos
 2,Parafusos_2025-12-09 15:38:04,unknown,Loja Online,Fafe,2025-12-09 15:38:04,09:00,18:00,30,Fafe,Normal,pendente,,Parafusos
@@ -18,10 +19,12 @@ id,idOriginal,idCliente,origem,destino,dataCriacao,janelaInicio,janelaFim,duraca
 17,Tintas_2025-12-28 21:30:57,1998,Loja Online,Braga,2025-12-28 21:30:57,09:00,18:00,30,Braga,Normal,pendente,,Tintas
 18,Tintas_2025-12-28 21:45:17,95,Loja Online,Braga,2025-12-28 21:45:17,09:00,18:00,30,Braga,Normal,pendente,,Tintas
 19,Tintas_2025-12-28 22:23:53,1999,Loja Online,Guimarães,2025-12-28 22:23:53,09:00,18:00,30,Guimarães,Normal,pendente,,Tintas
-20,Tintas_2026-01-03 16:34:28,2,Loja Online,Fafe,2026-01-03 16:34:28,09:00,18:00,30,Fafe,Normal,pendente,,Tintas
+20,Tintas_2026-01-03 16:34:28,2,Loja Online,Fafe,2026-01-03 16:34:28,09:00,18:00,30,Braga,Muito,pendente,,Tintas
 21,Martelos_2026-01-03 16:34:28,2,Loja Online,Fafe,2026-01-03 16:34:28,09:00,18:00,30,Fafe,Normal,pendente,,Martelos
 22,Tintas_2026-01-03 17:09:08,34,Loja Online,Braga,2026-01-03 17:09:08,09:00,18:00,30,Braga,Normal,aprovada,,Tintas
-23,Martelos_2026-01-03 17:12:53,3,Loja Online,Guimarães,2026-01-03 17:12:53,09:00,18:00,30,Guimarães,Normal,pendente,,Martelos
+23,Martelos_2026-01-03 17:12:53,3,Loja Online,Guimarães,2026-01-03 17:12:53,09:00,18:00,30,Guimarães,Normal,cancelada,,Martelos
 24,Tintas_2026-01-03 17:16:03,46666666,Loja Online,Braga,2026-01-03 17:16:03,09:00,18:00,30,Braga,Normal,rejeitada,,Tintas
 25,Parafusos_2026-01-03 19:02:19,sara,Loja Online,Braga,2026-01-03 19:02:19,09:00,18:00,30,Braga,Normal,pendente,,Parafusos
 26,Martelos_2026-01-07 20:22:06,saraaaaaaaaaaaaaaaaaa,Loja Online,Fafe,2026-01-07 20:22:06,09:00,18:00,30,Fafe,Normal,aprovada,,Martelos
+27,Tintas_2026-01-07 23:09:42,mariana,Loja Online,Braga,2026-01-07 23:09:42,09:00,18:00,30,Porto,MUITA,pendente,,Tintas
+28,Tintas_2026-01-07 23:26:06,SARAAAA,Loja Online,Fafe,2026-01-07 23:26:06,09:00,18:00,30,Fafe,Normal,aprovada,,Tintas
