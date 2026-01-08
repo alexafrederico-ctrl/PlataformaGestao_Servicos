@@ -1,6 +1,6 @@
 idEstafeta,nome,zona,turno,disponibilidade,carga_trabalho
-1,Mari,braga,noite,livre,0
-2,Joao,braga,dia,livre,0
-3,Sara,guimaraes,dia,livre,0
-4,Carlos,famalicao,noite,ocupado,2
-5,Ana,fafe,dia,livre,1
+1,Mari,Braga,dia,true,0
+2,Joao,Braga,noite,true,1
+3,Sara,Guimarães,dia,true,0
+4,Carlos,Famalicão,noite,false,2
+5,Ana,Fafe,dia,true,0
