@@ -10,3 +10,7 @@ ClienteID,Tipo,Mensagem,Timestamp
 948,Confirmação,Pedido confirmado para Guimar?es - Total: 36.0€,2026-01-09 14:49:09
 545,Atualização de Estado,Pedido 545_20260109145656: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-09 14:56:56
 545,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-09 14:56:56
+2,Atualização de Estado,Pedido 2_20260109232356: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-09 23:23:56
+2,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-09 23:23:56
+846,Atualização de Estado,Pedido 846_20260109232908: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-09 23:29:08
+846,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-09 23:29:08

@@ -36,7 +36,7 @@ ESTADOS_NAO_CANCELAVEIS = {
 }
 
 #  Schema fixo do tracking (agora com coluna Tracking)
-EVENTOS_SCHEMA = ['PedidoID', 'ClienteID', 'Estado', 'Descricao', 'Timestamp', 'Tracking']
+EVENTOS_SCHEMA = ['ClienteID', 'Evento', 'Produto', 'Status', 'Destino', 'Timestamp']
 
 #  Schema para pedidos (para permitir atualização em ficheiro)
 PEDIDOS_SCHEMA = [
@@ -226,138 +226,109 @@ def load_materials_dataframe():
 
 # ============= SISTEMA DE tracking EM TEMPO REAL =============
 def criar_evento_pedido(pedido_id: str, novo_estado: str, cliente_id: str, descricao: str = "") -> dict:
-    """
-    Cria um novo evento de tracking para um pedido.
-     Agora também preenche a coluna "Tracking" no eventos_pedido.csv
-    """
+    """Cria um novo evento de tracking para um pedido com a estrutura do eventos_pedido.csv."""
     if novo_estado not in ESTADOS_PEDIDO:
-        print(f"⚠ Estado '{novo_estado}' não reconhecido. Estados válidos: {ESTADOS_PEDIDO}")
+        print(f"Estado '{novo_estado}' nao reconhecido. Estados validos: {ESTADOS_PEDIDO}")
         novo_estado = 'Criado'
-
     ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
+    produto = ""
+    destino = ""
+    try:
+        df_pedidos = _normalizar_pedidos_schema(load_pedidos())
+        if not df_pedidos.empty and 'PedidoID' in df_pedidos.columns:
+            df_pedido = df_pedidos[df_pedidos['PedidoID'].astype(str).str.strip() == str(pedido_id).strip()]
+            if not df_pedido.empty:
+                produto = str(df_pedido.iloc[0].get('Produto', '')).strip()
+                destino = str(df_pedido.iloc[0].get('Destino', '')).strip()
+    except Exception:
+        pass
+    evento_texto = f"PedidoID={str(pedido_id).strip()}"
+    if descricao:
+        evento_texto = f"{evento_texto} | {str(descricao).strip()}"
     evento = {
-        'PedidoID': str(pedido_id).strip(),
         'ClienteID': str(cliente_id).strip() if cliente_id else 'unknown',
-        'Estado': str(novo_estado).strip(),
-        'Descricao': str(descricao) if descricao is not None else "",
-        'Timestamp': ts,
-        #  Coluna extra pedida: Tracking (texto pronto)
-        'Tracking': f"{ts} → {str(novo_estado).strip()}"
+        'Evento': evento_texto,
+        'Produto': produto,
+        'Status': str(novo_estado).strip(),
+        'Destino': destino,
+        'Timestamp': ts
     }
     return evento
 
-
 def _normalizar_eventos_schema(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Garante que o DF de eventos tem as colunas do schema.
-    Se vierem colunas diferentes (ex: de outro módulo), isto evita NaN.
-     Inclui a coluna "Tracking".
-    """
+    """Garante que o DF de eventos tem as colunas do schema."""
     if df is None or df.empty:
         return pd.DataFrame(columns=EVENTOS_SCHEMA)
-
-    # criar colunas em falta
     for c in EVENTOS_SCHEMA:
         if c not in df.columns:
             df[c] = ""
-
-    # manter apenas schema (ignora lixo)
     df = df[EVENTOS_SCHEMA].copy()
-
-    # normalizar tipos/trim
     for c in EVENTOS_SCHEMA:
         df[c] = df[c].astype(str).str.strip()
-
-    # evitar 'nan' literal
     df = df.replace({'nan': ''})
     df.loc[df['ClienteID'] == '', 'ClienteID'] = 'unknown'
-
-    # se vier algum evento antigo sem tracking, tenta preencher de forma automática
-    if 'Tracking' in df.columns:
-        mask = df['Tracking'].astype(str).str.strip() == ""
-        if mask.any():
-            df.loc[mask, 'Tracking'] = df.loc[mask].apply(
-                lambda r: f"{r.get('Timestamp','')} → {r.get('Estado','')}".strip(),
-                axis=1
-            )
-
     return df
 
-
 def registar_evento_pedido(evento: dict) -> None:
-    """
-    Registra um evento de tracking no CSV de eventos.
-    Cada mudança de estado cria uma entrada nova.
-    CRIAÇÃO CSV'S CASO NÃO EXISTA! SE JÁ EXISTIR, APENAS ATUALIZA!
-    """
+    """Regista um evento de tracking no CSV de eventos."""
     global DF_EVENTOS
-
     try:
         df_novo = pd.DataFrame([evento])
         df_novo = _normalizar_eventos_schema(df_novo)
-
         df_existentes = load_eventos()
         df_existentes = _normalizar_eventos_schema(df_existentes)
-
         df_final = pd.concat([df_existentes, df_novo], ignore_index=True)
-
         os.makedirs(os.path.dirname(EVENTOS_CSV) or '.', exist_ok=True)
         df_final.to_csv(EVENTOS_CSV, index=False, encoding='utf-8')
-
         DF_EVENTOS = df_final
-
-        print(f"✓ Evento registado: {evento['Estado']} para pedido {evento['PedidoID']}")
-
+        pedido_id = _extrair_pedido_id_evento(str(evento.get('Evento', '')))
+        print(f"Evento registado: {evento.get('Status', '')} para pedido {pedido_id}")
     except Exception as e:
-        print(f"✗ Erro ao registar evento: {e}")
+        print(f"Erro ao registar evento: {e}")
 
+def _extrair_pedido_id_evento(evento_texto: str) -> str:
+    evento_texto = str(evento_texto or '')
+    marcador = 'PedidoID='
+    if marcador not in evento_texto:
+        return ''
+    parte = evento_texto.split(marcador, 1)[1]
+    for sep in [' | ', ' ', ';', ',']:
+        if sep in parte:
+            parte = parte.split(sep, 1)[0]
+            break
+    return parte.strip()
 
 def obter_estado_atual_pedido(pedido_id: str) -> str:
-    """
-    Obtém o estado atual de um pedido (último evento registado).
-    """
+    """Obtem o estado atual de um pedido (ultimo evento registado)."""
     df_eventos = load_eventos()
     df_eventos = _normalizar_eventos_schema(df_eventos)
-
     if df_eventos.empty:
         return 'Desconhecido'
-
     pedido_id = str(pedido_id).strip()
-    pedido_eventos = df_eventos[df_eventos['PedidoID'] == pedido_id]
-
+    df_eventos['_PedidoID'] = df_eventos['Evento'].apply(_extrair_pedido_id_evento)
+    pedido_eventos = df_eventos[df_eventos['_PedidoID'] == pedido_id]
     if pedido_eventos.empty:
         return 'Desconhecido'
-
     pedido_eventos = pedido_eventos.sort_values('Timestamp', ascending=True)
     ultimo_evento = pedido_eventos.iloc[-1]
-
-    estado = str(ultimo_evento.get('Estado', '')).strip()
+    estado = str(ultimo_evento.get('Status', '')).strip()
     if not estado or estado.lower() == 'nan':
         return 'Desconhecido'
     return estado
 
-
 def obter_historico_pedido(pedido_id: str) -> pd.DataFrame:
-    """
-    Obtém o histórico completo de tracking de um pedido.
-    """
+    """Obtem o historico completo de tracking de um pedido."""
     df_eventos = load_eventos()
     df_eventos = _normalizar_eventos_schema(df_eventos)
-
     if df_eventos.empty:
         return pd.DataFrame(columns=EVENTOS_SCHEMA)
-
     pedido_id = str(pedido_id).strip()
-    pedido_eventos = df_eventos[df_eventos['PedidoID'] == pedido_id].copy()
-
+    df_eventos['_PedidoID'] = df_eventos['Evento'].apply(_extrair_pedido_id_evento)
+    pedido_eventos = df_eventos[df_eventos['_PedidoID'] == pedido_id].copy()
     if not pedido_eventos.empty:
         pedido_eventos = pedido_eventos.sort_values('Timestamp', ascending=True)
-
     return pedido_eventos
 
-
-# ================== PEDIDOS.CSV helpers (atualização em ficheiro) ==================
 def _normalizar_pedidos_schema(df: pd.DataFrame) -> pd.DataFrame:
     if df is None or df.empty:
         return pd.DataFrame(columns=PEDIDOS_SCHEMA)
@@ -638,30 +609,22 @@ def salvar_mensagem_tracking(cliente_id: str, tipo: str, mensagem: str) -> None:
 
 # ================== OPÇÃO B ==================
 def resolver_pedido_id(input_id: str) -> str:
-    """
-    Permite ao gestor/cliente escrever:
-      - ID completo (ex: 1998_20251228213057) -> retorna igual
-      - só ClienteID (ex: 1998) -> resolve para o PedidoID mais recente desse cliente (prefixo 1998_)
-    """
+    """Resolve PedidoID a partir de ClienteID (usa eventos existentes)."""
     input_id = str(input_id).strip()
     if not input_id:
         return input_id
-
-    if "_" in input_id:
+    if '_' in input_id:
         return input_id
-
     df_eventos = _normalizar_eventos_schema(load_eventos())
     if df_eventos.empty:
         return input_id
-
-    prefixo = input_id + "_"
-    candidatos = df_eventos[df_eventos["PedidoID"].astype(str).str.startswith(prefixo)].copy()
+    prefixo = input_id + '_'
+    df_eventos['_PedidoID'] = df_eventos['Evento'].apply(_extrair_pedido_id_evento)
+    candidatos = df_eventos[df_eventos['_PedidoID'].astype(str).str.startswith(prefixo)].copy()
     if candidatos.empty:
         return input_id
-
-    candidatos = candidatos.sort_values("Timestamp", ascending=True)
-    return str(candidatos.iloc[-1]["PedidoID"]).strip()
-
+    candidatos = candidatos.sort_values('Timestamp', ascending=True)
+    return str(candidatos.iloc[-1]['_PedidoID']).strip()
 
 def resolver_pedido_id_cliente(input_id: str) -> str:
     """
@@ -942,12 +905,11 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
                                 df_eventos_cliente = df_eventos_cliente.sort_values('Timestamp', ascending=True)
                                 for _, evento in df_eventos_cliente.iterrows():
                                     ts = str(evento.get('Timestamp', ''))
-                                    est = str(evento.get('Estado', ''))
-                                    desc = str(evento.get('Descricao', ''))
-                                    pid = str(evento.get('PedidoID', ''))
-                                    track = str(evento.get('Tracking', ''))
-                                    print(f"  • {ts} → {est:20s} | {pid} | TRACK: {track} | ({desc[:60]})")
-                                pedidos_unicos = df_eventos_cliente['PedidoID'].unique()
+                                    est = str(evento.get('Status', ''))
+                                    evento_txt = str(evento.get('Evento', ''))
+                                    pid = _extrair_pedido_id_evento(evento_txt)
+                                    print(f"  ? {ts} ? {est:20s} | {pid} | {evento_txt}")
+                                pedidos_unicos = df_eventos_cliente['Evento'].apply(_extrair_pedido_id_evento).unique()
                                 print("\n  ➤ ESTADO ATUAL:")
                                 for pid in pedidos_unicos:
                                     estado = obter_estado_atual_pedido(pid)
