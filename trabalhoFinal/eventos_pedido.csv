@@ -1,2 +1,11 @@
-ClienteID,Evento,Produto,Status,Destino,Timestamp
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-09 01:58:10
+PedidoID,ClienteID,Estado,Descricao,Timestamp,Tracking
+,N/A,,,2026-01-09 01:58:10,2026-01-09 01:58:10 →
+984_20260109140633,984,Criado,Pedido criado com 1 produtos para Fafe,2026-01-09 14:06:33,2026-01-09 14:06:33 → Criado
+984_20260109140633,984,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-09 14:06:33,2026-01-09 14:06:33 → Confirmado
+984_20260109140633,984,Cancelado,Pedido cancelado pelo cliente. Motivo: nao quero mais,2026-01-09 14:09:26,2026-01-09 14:09:26 → Cancelado
+948_20260109144642,948,Criado,Pedido criado com 1 produtos para Fafe,2026-01-09 14:46:42,2026-01-09 14:46:42 → Criado
+948_20260109144642,948,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-09 14:46:42,2026-01-09 14:46:42 → Confirmado
+948_20260109144909,948,Criado,Pedido criado com 1 produtos para Guimar?es,2026-01-09 14:49:09,2026-01-09 14:49:09 → Criado
+948_20260109144909,948,Confirmado,Pedido confirmado. Total: 36.0€,2026-01-09 14:49:09,2026-01-09 14:49:09 → Confirmado
+545_20260109145656,545,Criado,Pedido criado com 1 produtos para Fafe,2026-01-09 14:56:56,2026-01-09 14:56:56 → Criado
+545_20260109145656,545,Confirmado,Pedido confirmado. Total: 3.2€,2026-01-09 14:56:56,2026-01-09 14:56:56 → Confirmado

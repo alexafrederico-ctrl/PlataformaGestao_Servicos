@@ -1,3 +1,12 @@
 ClienteID,Tipo,Mensagem,Timestamp
 1,Atualização de Estado,Pedido 1_20260109014900: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-09 01:49:00
 1,Confirmação,Pedido confirmado para Fafe - Total: 22.0€,2026-01-09 01:49:00
+984,Atualização de Estado,Pedido 984_20260109140633: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-09 14:06:33
+984,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-09 14:06:34
+984,Atualização de Estado,Pedido 984_20260109140633: Estado alterado de 'Confirmado' para 'Cancelado' - Pedido cancelado pelo cliente. Motivo: nao quero mais,2026-01-09 14:09:26
+948,Atualização de Estado,Pedido 948_20260109144642: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-09 14:46:42
+948,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-09 14:46:42
+948,Atualização de Estado,Pedido 948_20260109144909: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 36.0€,2026-01-09 14:49:09
+948,Confirmação,Pedido confirmado para Guimar?es - Total: 36.0€,2026-01-09 14:49:09
+545,Atualização de Estado,Pedido 545_20260109145656: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 3.2€,2026-01-09 14:56:56
+545,Confirmação,Pedido confirmado para Fafe - Total: 3.2€,2026-01-09 14:56:56
