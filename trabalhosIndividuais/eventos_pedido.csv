@@ -1,77 +1,106 @@
-ClienteID,Evento,Produto,Status,Destino,Timestamp
-mariana,Pedido Criado,Tintas,Confirmado,Braga,2026-01-07 23:09:42
-mariana,Gestor: PENDENTE,Tintas,pendente,Braga,2026-01-07 23:09:59
-SARAAAA,Pedido Criado,Tintas,Confirmado,Fafe,2026-01-07 23:26:06
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-07 23:26:16
-SARAAAA,Gestor: APROVADA,Tintas,aprovada,Fafe,2026-01-07 23:35:11
-3,Gestor: CANCELADA,Martelos,cancelada,Guimarães,2026-01-08 00:00:49
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:19:58
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-08 00:21:17
-46666666,Gestor: APROVADA,Tintas,aprovada,Braga,2026-01-08 00:38:40
-sara,Gestor: APROVADA,Parafusos,aprovada,Braga,2026-01-08 00:38:43
-unknown,Gestor: APROVADA,Parafusos,aprovada,Fafe,2026-01-08 00:38:45
-unknown,Gestor: APROVADA,Parafusos,aprovada,Guimarães,2026-01-08 00:38:49
-2,Gestor: APROVADA,Martelos,aprovada,Guimarães,2026-01-08 00:38:51
-6,Gestor: APROVADA,Nivelador,aprovada,Guimarães,2026-01-08 00:38:53
-6,Gestor: APROVADA,Serra,aprovada,Braga,2026-01-08 00:38:55
-unknown,Gestor: ATRIBUIDA,Parafusos,atribuida,Fafe,2026-01-08 00:40:16
-unknown,Gestor: ATRIBUIDA,Parafusos,atribuida,Guimarães,2026-01-08 00:40:16
-2,Gestor: ATRIBUIDA,Martelos,atribuida,Guimarães,2026-01-08 00:40:16
-6,Gestor: ATRIBUIDA,Nivelador,atribuida,Guimarães,2026-01-08 00:40:16
-6,Gestor: ATRIBUIDA,Serra,atribuida,Braga,2026-01-08 00:40:16
-46666666,Gestor: ATRIBUIDA,Tintas,atribuida,Braga,2026-01-08 00:40:16
-sara,Gestor: ATRIBUIDA,Parafusos,atribuida,Braga,2026-01-08 00:40:16
+PedidoID,ClienteID,Estado,Descricao,Timestamp,Tracking
+,mariana,,,2026-01-07 23:09:42,2026-01-07 23:09:42 →
+,mariana,,,2026-01-07 23:09:59,2026-01-07 23:09:59 →
+,SARAAAA,,,2026-01-07 23:26:06,2026-01-07 23:26:06 →
+,unknown,,,2026-01-07 23:26:16,2026-01-07 23:26:16 →
+,SARAAAA,,,2026-01-07 23:35:11,2026-01-07 23:35:11 →
+,3,,,2026-01-08 00:00:49,2026-01-08 00:00:49 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:19:58,2026-01-08 00:19:58 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,unknown,,,2026-01-08 00:21:17,2026-01-08 00:21:17 →
+,46666666,,,2026-01-08 00:38:40,2026-01-08 00:38:40 →
+,sara,,,2026-01-08 00:38:43,2026-01-08 00:38:43 →
+,unknown,,,2026-01-08 00:38:45,2026-01-08 00:38:45 →
+,unknown,,,2026-01-08 00:38:49,2026-01-08 00:38:49 →
+,2,,,2026-01-08 00:38:51,2026-01-08 00:38:51 →
+,6,,,2026-01-08 00:38:53,2026-01-08 00:38:53 →
+,6,,,2026-01-08 00:38:55,2026-01-08 00:38:55 →
+,unknown,,,2026-01-08 00:40:16,2026-01-08 00:40:16 →
+,unknown,,,2026-01-08 00:40:16,2026-01-08 00:40:16 →
+,2,,,2026-01-08 00:40:16,2026-01-08 00:40:16 →
+,6,,,2026-01-08 00:40:16,2026-01-08 00:40:16 →
+,6,,,2026-01-08 00:40:16,2026-01-08 00:40:16 →
+,46666666,,,2026-01-08 00:40:16,2026-01-08 00:40:16 →
+,sara,,,2026-01-08 00:40:16,2026-01-08 00:40:16 →
+,111,,,2026-01-08 10:48:54,2026-01-08 10:48:54 →
+,unknown,,,2026-01-08 11:30:17,2026-01-08 11:30:17 →
+,999,,,2026-01-08 11:42:34,2026-01-08 11:42:34 →
+pp,ii,Cancelado,Pedido cancelado pelo cliente. Motivo: pedro,2026-01-08 23:18:33,2026-01-08 23:18:33 → Cancelado
+jbjb VSilKHVNAE LDC,ii,Cancelado,Pedido cancelado pelo cliente. Motivo: JFVbSIUKvbeanvs,2026-01-08 23:21:08,2026-01-08 23:21:08 → Cancelado
+2123123_20260108234445,2123123,Criado,Pedido criado com 0 produtos para Braga,2026-01-08 23:44:45,2026-01-08 23:44:45 → Criado
+2123123_20260108234445,2123123,Confirmado,Pedido confirmado. Total: 0.0€,2026-01-08 23:44:45,2026-01-08 23:44:45 → Confirmado
+2123123_20260108234534,2123123,Criado,Pedido criado com 1 produtos para Braga,2026-01-08 23:45:34,2026-01-08 23:45:34 → Criado
+2123123_20260108234534,2123123,Confirmado,Pedido confirmado. Total: 22.0€,2026-01-08 23:45:34,2026-01-08 23:45:34 → Confirmado
+2123123_20260108234534,2123123,Cancelado,Pedido cancelado pelo cliente. Motivo: \\,2026-01-08 23:46:05,2026-01-08 23:46:05 → Cancelado
+2123123_20260108234445,2123123,Cancelado,Pedido cancelado pelo cliente. Motivo: AA,2026-01-08 23:48:41,2026-01-08 23:48:41 → Cancelado
+qkeuyavgVI	WHV,dlraugbehvNSçowrlnb,Cancelado,Pedido cancelado pelo cliente. Motivo: ougvebev,2026-01-09 00:50:53,2026-01-09 00:50:53 → Cancelado
+11212_20260109011553,11212,Criado,Pedido criado com 1 produtos para Braga,2026-01-09 01:15:53,2026-01-09 01:15:53 → Criado
+11212_20260109011553,11212,Confirmado,Pedido confirmado. Total: 22.0€,2026-01-09 01:15:53,2026-01-09 01:15:53 → Confirmado
+123131,123124124,Cancelado,Pedido cancelado pelo cliente. Motivo: 1231,2026-01-09 01:19:59,2026-01-09 01:19:59 → Cancelado
+123124124_20260109012026,123124124,Criado,Pedido criado com 0 produtos para Fafe,2026-01-09 01:20:26,2026-01-09 01:20:26 → Criado
+123124124_20260109012026,123124124,Confirmado,Pedido confirmado. Total: 0.0€,2026-01-09 01:20:26,2026-01-09 01:20:26 → Confirmado
+1213132_20260109012155,1213132,Criado,Pedido criado com 0 produtos para Fafe,2026-01-09 01:21:55,2026-01-09 01:21:55 → Criado
+1213132_20260109012155,1213132,Confirmado,Pedido confirmado. Total: 0.0€,2026-01-09 01:21:55,2026-01-09 01:21:55 → Confirmado
+1_20260109012408,1,Criado,Pedido criado com 0 produtos para Fafe,2026-01-09 01:24:08,2026-01-09 01:24:08 → Criado
+1_20260109012408,1,Confirmado,Pedido confirmado. Total: 0.0€,2026-01-09 01:24:08,2026-01-09 01:24:08 → Confirmado
+1_20260109012420,1,Criado,Pedido criado com 1 produtos para Braga,2026-01-09 01:24:20,2026-01-09 01:24:20 → Criado
+1_20260109012420,1,Confirmado,Pedido confirmado. Total: 11.0€,2026-01-09 01:24:20,2026-01-09 01:24:20 → Confirmado
+1231_20260109013449,1231,Criado,Pedido criado com 1 produtos para Fafe,2026-01-09 01:34:49,2026-01-09 01:34:49 → Criado
+1231_20260109013449,1231,Confirmado,Pedido confirmado. Total: 11.0€,2026-01-09 01:34:49,2026-01-09 01:34:49 → Confirmado
+1_20260109013527,1,Criado,Pedido criado com 1 produtos para Fafe,2026-01-09 01:35:27,2026-01-09 01:35:27 → Criado
+1_20260109013527,1,Confirmado,Pedido confirmado. Total: 1.6€,2026-01-09 01:35:27,2026-01-09 01:35:27 → Confirmado
+2_20260109014103,2,Criado,Pedido criado com 1 produtos para Fafe,2026-01-09 01:41:03,2026-01-09 01:41:03 → Criado
+2_20260109014103,2,Confirmado,Pedido confirmado. Total: 22.0€,2026-01-09 01:41:03,2026-01-09 01:41:03 → Confirmado

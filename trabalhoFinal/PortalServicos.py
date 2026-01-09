@@ -1,10 +1,12 @@
 import os
+import csv
 import pandas as pd
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 
+#--------------------------------------------------------------------------------- Portal Cliente (Alexandra)-------------------------------------------------------------------------------------------------
 # Caminhos para os CSV do cliente
-CLIENT_DIR = os.path.join(os.path.dirname(__file__), '..', 'trabalhosIndividuais')
+CLIENT_DIR = os.path.join(os.path.dirname(__file__), '..', 'trabalhoFinal')
 PEDIDOS_CSV = os.path.join(CLIENT_DIR, 'pedidos.csv')
 EVENTOS_CSV = os.path.join(CLIENT_DIR, 'eventos_pedido.csv')
 MENSAGENS_CSV = os.path.join(CLIENT_DIR, 'mensagens.csv')
@@ -58,8 +60,12 @@ AVALIACOES_SCHEMA = [
     'Timestamp'
 ]
 
-
+# DataFrames globais (em memoria para acesso rapido)
+DF_PEDIDOS = pd.DataFrame()
+DF_EVENTOS = pd.DataFrame()
+DF_MENSAGENS = pd.DataFrame()
 # Importacao tardia do PortalCliente para evitar pedidos de input no arranque
+
 def _get_portal_cliente_module():
     """Tenta importar o modulo PortalCliente de forma tardia.
 
@@ -74,216 +80,6 @@ def _get_portal_cliente_module():
         return _importlib.import_module('PortalCliente')
     except Exception:
         return None
-
-
-# DataFrames globais (em memoria para acesso rapido)
-DF_PEDIDOS = pd.DataFrame()
-DF_EVENTOS = pd.DataFrame()
-DF_MENSAGENS = pd.DataFrame()
-
-
-def consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonaEncomendas):
-    i = 0
-    while i <= 2:
-        print(
-            "As encomendas pendentes são: " + chr(13) + str(iD[i]) +
-            " - O material pedido foi " + materiaisRequeridos[i] +
-            " com a quantidade de " + str(materiaisRequeridosQtd[i]) + "."
-        )
-        i = i + 1
-
-
-def consultarEstafetas(profissionalZona, profissionalLivre):
-    i = 0
-    while i <= 2:
-        if profissionalLivre[i] is True:
-            print("O Estafeta " + str(i) + " encontra-se na zona " + profissionalZona[i] + ".")
-        i = i + 1
-
-
-def consultarZonas(zonasAtendidas):
-    i = 0
-    while i <= 1:
-        print("As zonas atendidas são: " + chr(13) + zonasAtendidas[i] + ".")
-        i = i + 1
-
-
-def encomendasAprovadas():
-    materialsName = [""] * (10)
-    materialsQtd = [0] * (10)
-    materialsPrice = [0] * (10)
-    orderMaterialQtd = [0] * (5)
-
-    materialsName[0] = "Tintas"
-    materialsName[1] = "Parafusos"
-    materialsName[2] = "Martelos"
-    materialsName[3] = "Pinceis"
-    materialsName[4] = "Verniz"
-    materialsName[5] = "Nivelador"
-    materialsName[6] = "Lixa"
-    materialsName[7] = "Aparafusadora"
-    materialsName[8] = "Fita-metrica"
-    materialsName[9] = "Serra"
-    materialsQtd[0] = 10
-    materialsQtd[1] = 100
-    materialsQtd[2] = 6
-    materialsQtd[3] = 10
-    materialsQtd[4] = 7
-    materialsQtd[5] = 15
-    materialsQtd[6] = 150
-    materialsQtd[7] = 33
-    materialsQtd[8] = 57
-    materialsQtd[9] = 0
-    materialsPrice[0] = 11
-    materialsPrice[1] = 1.6
-    materialsPrice[2] = 5
-    materialsPrice[3] = 9
-    materialsPrice[4] = 14
-    materialsPrice[5] = 23
-    materialsPrice[6] = 1
-    materialsPrice[7] = 55
-    materialsPrice[8] = 3
-    materialsPrice[9] = 7
-    encomendas = [0] * (3)
-    iD = [0] * (3)
-    zonaEncomendas = [""] * (3)
-    estadoEncomenda = [""] * (3)
-    materiaisRequeridos = [""] * (3)
-    materiaisRequeridosQtd = [0] * (3)
-    zonasAtendidas = [""] * (2)
-    profissionalZona = [""] * (3)
-    profissionalLivre = [False] * (3)
-
-    zonasAtendidas[0] = "Braga"
-    zonasAtendidas[1] = "Guimarães"
-    iD[0] = 1001
-    estadoEncomenda[0] = "Pendente"
-    zonaEncomendas[0] = "Braga"
-    materiaisRequeridos[0] = "Nivelador"
-    materiaisRequeridosQtd[0] = 10
-    iD[1] = 1002
-    estadoEncomenda[1] = "Pendente"
-    zonaEncomendas[1] = "Faro"
-    materiaisRequeridos[1] = "Aparafusadora"
-    materiaisRequeridosQtd[1] = 2
-    iD[2] = 1003
-    estadoEncomenda[2] = "Pendente"
-    zonaEncomendas[2] = "Guimarães"
-    materiaisRequeridos[2] = "Serra"
-    materiaisRequeridosQtd[2] = 5
-    tamanhoProfissionais = 3
-    profissionalZona[0] = "Guimarães"
-    profissionalZona[1] = "Guimarães"
-    profissionalZona[2] = "Braga"
-    profissionalLivre[0] = True
-    profissionalLivre[1] = False
-    profissionalLivre[2] = True
-    i = 0
-    tamanhoEncomendas = 3
-    while i < tamanhoEncomendas:
-
-        # Testar as zonas
-        zona = False
-        j = 0
-        while j < 2:
-            if zonaEncomendas[i] == zonasAtendidas[j]:
-                zona = True
-            j = j + 1
-            stock = False
-            p = 0
-
-            # Testar os nomes dos materiais e a quantidade disponível de cada um
-            while p < 9 and zona is True:
-                if materiaisRequeridos[i] == materialsName[p]:
-                    if materiaisRequeridosQtd[i] <= materialsQtd[p]:
-                        stock = True
-                        p = 1000
-                    else:
-                        p = 10000
-                else:
-                    p = p + 1
-        if zona is True and stock is True:
-            print("Encomenda " + str(iD[i]) + ": APROVADA")
-            estadoEncomenda[i] = "Aprovado"
-        else:
-            print("Encomenda " + str(iD[i]) + ": REJEITADA")
-            estadoEncomenda[i] = "Rejeitado"
-        i = i + 1
-        i = 0
-        while i < tamanhoEncomendas:
-            if estadoEncomenda[i] == "Aprovado":
-                atribuido = False
-                k = 0
-
-                # Atribuição de Profissionais/Estafetas
-                while k < tamanhoProfissionais and atribuido is False:
-                    if zonaEncomendas[i] == profissionalZona[k] and profissionalLivre[k] is True:
-                        print("Encomenda " + str(iD[i]) + ": Atribuída ao Profissional " + str(k))
-                        estadoEncomenda[i] = "Em Processamento"
-                        profissionalLivre[k] = False
-                        atribuido = True
-                    else:
-                        k = k + 1
-                if atribuido is False:
-                    print("Encomenda " + str(iD[i]) + ": NENHUM Estafeta DISPONÍVEL (Aguardar Atribuição)")
-                    estadoEncomenda[i] = "Aguardar Atribuição"
-            else:
-                i = i + 1
-    i = i + 1
-
-
-def mENU():
-    print("*****MENU*****")
-    print("1 - Consultar encomendas pendentes")
-    print("2 - Consultar zonas atendidas")
-    print("3 - Consultar estafetas disponíveis")
-    print("4 - Consultar encomendas aprovadas")
-    print("5 - Sair")
-    opçoes = int(input())
-    return opçoes
-
-
-def init_inventario():
-    # Inventario partilhado de produtos (usa o conjunto maior do gestor)
-    produtosNome = [""] * 10
-    produtosQtd = [0] * 10
-    produtosPreco = [0] * 10
-
-    produtosNome[0] = "Tintas"
-    produtosNome[1] = "Parafusos"
-    produtosNome[2] = "Martelos"
-    produtosNome[3] = "Pinceis"
-    produtosNome[4] = "Verniz"
-    produtosNome[5] = "Nivelador"
-    produtosNome[6] = "Lixa"
-    produtosNome[7] = "Aparafusadora"
-    produtosNome[8] = "Fita-metrica"
-    produtosNome[9] = "Serra"
-
-    produtosQtd[0] = 10
-    produtosQtd[1] = 100
-    produtosQtd[2] = 6
-    produtosQtd[3] = 10
-    produtosQtd[4] = 7
-    produtosQtd[5] = 15
-    produtosQtd[6] = 150
-    produtosQtd[7] = 33
-    produtosQtd[8] = 57
-    produtosQtd[9] = 0
-
-    produtosPreco[0] = 11
-    produtosPreco[1] = 1.6
-    produtosPreco[2] = 5
-    produtosPreco[3] = 9
-    produtosPreco[4] = 14
-    produtosPreco[5] = 23
-    produtosPreco[6] = 1
-    produtosPreco[7] = 55
-    produtosPreco[8] = 3
-    produtosPreco[9] = 7
-
-    return produtosNome, produtosQtd, produtosPreco
-
 
 def _read_csv_if_exists(path: str) -> pd.DataFrame:
     """
@@ -357,6 +153,46 @@ def load_cliente_pedidos():
 def load_cliente_eventos():
     return load_eventos()
 
+def init_inventario():
+    # Inventario partilhado de produtos (usa o conjunto maior do gestor)
+    produtosNome = [""] * 10
+    produtosQtd = [0] * 10
+    produtosPreco = [0] * 10
+
+    produtosNome[0] = "Tintas"
+    produtosNome[1] = "Parafusos"
+    produtosNome[2] = "Martelos"
+    produtosNome[3] = "Pinceis"
+    produtosNome[4] = "Verniz"
+    produtosNome[5] = "Nivelador"
+    produtosNome[6] = "Lixa"
+    produtosNome[7] = "Aparafusadora"
+    produtosNome[8] = "Fita-metrica"
+    produtosNome[9] = "Serra"
+
+    produtosQtd[0] = 10
+    produtosQtd[1] = 100
+    produtosQtd[2] = 6
+    produtosQtd[3] = 10
+    produtosQtd[4] = 7
+    produtosQtd[5] = 15
+    produtosQtd[6] = 150
+    produtosQtd[7] = 33
+    produtosQtd[8] = 57
+    produtosQtd[9] = 0
+
+    produtosPreco[0] = 11
+    produtosPreco[1] = 1.6
+    produtosPreco[2] = 5
+    produtosPreco[3] = 9
+    produtosPreco[4] = 14
+    produtosPreco[5] = 23
+    produtosPreco[6] = 1
+    produtosPreco[7] = 55
+    produtosPreco[8] = 3
+    produtosPreco[9] = 7
+
+    return produtosNome, produtosQtd, produtosPreco
 
 def load_cliente_mensagens():
     return load_mensagens()
@@ -927,7 +763,7 @@ def validacaoStock(produtosNome, produtosQtd, encomendas, produtosPreco):
                     encomendas[i] * produtosPreco[i]))
 
 
-# Cliente main
+#Portal Cliente,  (MAIN)
 def cliente_main(produtosNome, produtosQtd, produtosPreco):
     destinosOpcao = [""] * 3
     destinos = [""] * 3
@@ -1108,610 +944,1502 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
     print("Continuação de um ótimo dia")
 
 
-# ------------------ Gestor functions ------------------
-def encomendasAprovadas(produtosNome, produtosQtd, produtosPreco):
-    encomendas = [0] * 3
-    iD = [0] * 3
-    zonaEncomendas = [""] * 3
-    estadoEncomenda = [""] * 3
-    materiaisRequeridos = [""] * 3
-    materiaisRequeridosQtd = [0] * 3
-    zonasAtendidas = [""] * 2
-    profissionalZona = [""] * 3
-    profissionalLivre = [False] * 3
+#--------------------------------------------------------------------------------- Gestor de encomendas (SARA)-------------------------------------------------------------------------------------------------
 
-    zonasAtendidas[0] = "Braga"
-    zonasAtendidas[1] = "Guimarães"
-    iD[0] = 1001
-    estadoEncomenda[0] = "Pendente"
-    zonaEncomendas[0] = "Braga"
-    materiaisRequeridos[0] = "Nivelador"
-    materiaisRequeridosQtd[0] = 10
-    iD[1] = 1002
-    estadoEncomenda[1] = "Pendente"
-    zonaEncomendas[1] = "Faro"
-    materiaisRequeridos[1] = "Aparafusadora"
-    materiaisRequeridosQtd[1] = 2
-    iD[2] = 1003
-    estadoEncomenda[2] = "Pendente"
-    zonaEncomendas[2] = "Guimarães"
-    materiaisRequeridos[2] = "Serra"
-    materiaisRequeridosQtd[2] = 5
-    tamanhoProfissionais = 3
-    profissionalZona[0] = "Guimarães"
-    profissionalZona[1] = "Guimarães"
-    profissionalZona[2] = "Braga"
-    profissionalLivre[0] = True
-    profissionalLivre[1] = False
-    profissionalLivre[2] = True
+# ================= CONSTANTES =================
+ESTADO_PENDENTE   = "pendente"
+ESTADO_APROVADA   = "aprovada"
+ESTADO_REJEITADA  = "rejeitada"
+ESTADO_CANCELADA  = "cancelada"
+ESTADO_ATRIBUIDA  = "atribuida"
 
-    i = 0
-    tamanhoEncomendas = 3
+ESTADOS = [
+    ESTADO_PENDENTE,
+    ESTADO_APROVADA,
+    ESTADO_REJEITADA,
+    ESTADO_CANCELADA,
+    ESTADO_ATRIBUIDA
+]
 
-    while i < tamanhoEncomendas:
-        zona = False
-        j = 0
-        while j < len(zonasAtendidas):
-            if zonaEncomendas[i] == zonasAtendidas[j]:
-                zona = True
-            j = j + 1
-        stock = False
-        p = 0
+COL_ENCOMENDAS = [
+    "id", "idOriginal", "idCliente", "origem", "destino", "dataCriacao",
+    "janelaInicio", "janelaFim", "duracaoEstimadaMin",
+    "zona", "prioridade", "estado", "idEstafeta", "produto"
+]
 
-        while p < len(produtosNome) and zona is True:
-            if materiaisRequeridos[i] == produtosNome[p]:
-                if materiaisRequeridosQtd[i] <= produtosQtd[p]:
-                    stock = True
-                    break
-                else:
-                    break
-            p = p + 1
+COL_EVENTOS = ["ClienteID", "Evento", "Produto", "Status", "Destino", "Timestamp"]
+COL_ATRIBUICOES = ["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao"]
+COL_ESTAFETAS = ["idEstafeta", "nome", "zona", "disponibilidade", "carga_trabalho"]
 
-        if zona is True and stock is True:
-            print("Encomenda " + str(iD[i]) + ": APROVADA")
-            estadoEncomenda[i] = "Aprovado"
-        else:
-            print("Encomenda " + str(iD[i]) + ": REJEITADA")
-            estadoEncomenda[i] = "Rejeitado"
-        i = i + 1
+# ================= CSV(Mecanismos) =================
 
-    i = 0
-    while i < tamanhoEncomendas:
-        if estadoEncomenda[i] == "Aprovado":
-            atribuido = False
-            k = 0
-            while k < tamanhoProfissionais and atribuido is False:
-                if zonaEncomendas[i] == profissionalZona[k] and profissionalLivre[k] is True:
-                    print("Encomenda " + str(iD[i]) + ": Atribuída ao Profissional " + str(k))
-                    estadoEncomenda[i] = "Em Processamento"
-                    profissionalLivre[k] = False
-                    atribuido = True
-                else:
-                    k = k + 1
-            if atribuido is False:
-                print("Encomenda " + str(iD[i]) + ": NENHUM Estafeta DISPONÍVEL (Aguardar Atribuição)")
-                estadoEncomenda[i] = "Aguardar Atribuição"
-        i = i + 1
+def criar_csv(nome, colunas):
+    if not os.path.exists(nome):
+        with open(nome, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=colunas)
+            writer.writeheader()
 
+def ler_csv(nome):
+    if not os.path.exists(nome):
+        return []
+    try:
+        with open(nome, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f, skipinitialspace=True)
+            return [{k.strip(): v.strip() for k, v in linha.items() if k is not None} for linha in reader]
+    except:
+        return []
 
-def gestor_menu():
-    print("*****MENU*****")
-    print("1 - Consultar encomendas pendentes")
-    print("2 - Consultar zonas atendidas")
-    print("3 - Consultar estafetas disponíveis")
-    print("4 - Consultar encomendas aprovadas")
-    print("5 - Consultar pedidos do cliente (CSV)")
-    print("6 - Consultar eventos de pedidos (tracking)")
-    print("7 - Consultar mensagens (confirmações/avisos)")
-    print("8 - Alterar estado de um pedido")
-    print("9 - Ver histórico de um pedido")
-    print("10 - Listar pedidos filtrados (estado/zona)")
-    print("11 - Sair")
-    opcoes = int(input())
-    return opcoes
+def guardar_csv(nome, colunas, dados):
+    with open(nome, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=colunas)
+        writer.writeheader()
+        writer.writerows(dados)
 
+def obter_proximo_id(ficheiro, campo):
+    dados = ler_csv(ficheiro)
+    ids = [int(d[campo]) for d in dados if d.get(campo, "").isdigit()]
+    return max(ids) + 1 if ids else 1
 
-def consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonaEncomendas, zonasAtendidas):
-    i = 0
-    while i < len(iD):
-        print(
-            "As encomendas pendentes são: " + chr(13) + str(iD[i]) +
-            " - O material pedido foi " + materiaisRequeridos[i] +
-            " com a quantidade de " + str(materiaisRequeridosQtd[i]) + "."
-        )
-        i = i + 1
+# ================= EVENTOS =================
 
+def registar_evento(idPedido, novo_estado):
+    criar_csv("eventos_pedido.csv", COL_EVENTOS)
 
-def consultarEstafetas(profissionalZona, profissionalLivre):
-    i = 0
-    while i < len(profissionalZona):
-        if profissionalLivre[i] is True:
-            print("O Estafeta " + str(i) + " encontra-se na zona " + profissionalZona[i] + ".")
-        i = i + 1
+    eventos = ler_csv("eventos_pedido.csv")
+    encomendas = ler_csv("encomendas.csv")
 
+    enc = next((e for e in encomendas if str(e["id"]) == str(idPedido)), {})
+    
 
-def consultarZonas(zonasAtendidas):
-    i = 0
-    while i < len(zonasAtendidas):
-        print("As zonas atendidas são: " + chr(13) + zonasAtendidas[i] + ".")
-        i = i + 1
+    eventos.append({
+        "ClienteID": enc.get("idCliente", "N/A"),
+        "Evento": f"Gestor: {novo_estado.upper()}",
+        "Produto": enc.get("produto", "N/A"),
+        "Status": novo_estado,
+        "Destino": enc.get("zona", "N/A"),
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
 
+    guardar_csv("eventos_pedido.csv", COL_EVENTOS, eventos)
 
-def listar_pedidos_filtrados_estado_zona():
-    """Lista pedidos com filtros opcionais por Estado e Destino (zona)."""
-    df = load_cliente_pedidos()
-    df = _normalizar_pedidos_schema(df)
-
-    if df.empty:
-        print("Nenhum pedido encontrado.")
+# ================= IMPORTAÇÃO =================
+def importar_pedidos_do_cliente():
+    if not os.path.exists("pedidos.csv"):
         return
 
-    coluna_avaliacao = None
-    if 'Avaliação' in df.columns:
-        coluna_avaliacao = 'Avaliação'
-    elif 'AvaliaÇõÇœo' in df.columns:
-        coluna_avaliacao = 'AvaliaÇõÇœo'
+    pedidos_brutos = ler_csv("pedidos.csv")
+    encomendas_atuais = ler_csv("encomendas.csv")
 
-    if coluna_avaliacao:
-        df_avaliacoes = load_avaliacoes()
-        df_avaliacoes = _normalizar_avaliacoes_schema(df_avaliacoes)
-        if not df_avaliacoes.empty:
-            df_avaliacoes = df_avaliacoes.sort_values('Timestamp', ascending=True)
-            mapa_avaliacoes = df_avaliacoes.groupby('PedidoID', as_index=False).last()
-            mapa_avaliacoes = dict(zip(mapa_avaliacoes['PedidoID'], mapa_avaliacoes['Rating']))
-            vazio = df[coluna_avaliacao].astype(str).str.strip() == ''
-            if vazio.any():
-                df.loc[vazio, coluna_avaliacao] = df.loc[vazio, 'PedidoID'].map(mapa_avaliacoes).fillna('')
+    processados = [e.get("idOriginal") for e in encomendas_atuais]
+    next_id = obter_proximo_id("encomendas.csv", "id")
+    alterou = False
 
-    print("\n=== FILTRO DE PEDIDOS ===")
-    print("Estados disponíveis:")
-    for i, est in enumerate(ESTADOS_PEDIDO, 1):
-        print(f"  {i} - {est}")
-    estado_in = input("Estado (ENTER para todos ou escolha acima): ").strip()
-    zona_in = input("Zona/Destino (ENTER para todas): ").strip()
+    for p in pedidos_brutos:
+        id_unico = f"{p.get('Produto')}_{p.get('Data')}"
 
-    filtrado = df.copy()
+        if id_unico not in processados:
+            encomendas_atuais.append({
+                "id": next_id,
+                "idOriginal": id_unico,
+                "idCliente": p.get("ClienteID", "Desconhecido"),
+                "produto": p.get("Produto", "N/A"),
+                "origem": "Loja Online",
+                "destino": p.get("Destino", ""),
+                "dataCriacao": p.get("Data", datetime.now().strftime("%Y-%m-%d")),
+                "janelaInicio": "09:00",
+                "janelaFim": "18:00",
+                "duracaoEstimadaMin": "30",
+                "zona": p.get("Destino", "N/A"),
+                "prioridade": "Normal",
+                "estado": ESTADO_PENDENTE,
+                "idEstafeta": ""
+            })
 
-    if estado_in:
-        if estado_in.isdigit():
-            idx = int(estado_in) - 1
-            if 0 <= idx < len(ESTADOS_PEDIDO):
-                estado_in = ESTADOS_PEDIDO[idx]
-        filtrado = filtrado[filtrado['Estado'].str.lower() == estado_in.lower()]
+            registar_evento(next_id, ESTADO_PENDENTE)
+            processados.append(id_unico)
+            next_id += 1
+            alterou = True
 
-    if zona_in:
-        filtrado = filtrado[filtrado['Destino'].str.lower().str.contains(zona_in.lower(), na=False)]
-
-    if filtrado.empty:
-        print("Nenhum pedido encontrado com esses filtros.")
+    if alterou:
+        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas_atuais)
+ 
+#================= FUNCIONALIDADES =================
+def listar_todas():
+    encomendas = ler_csv("encomendas.csv")
+    if not encomendas:
+        print("\nNão existem encomendas registadas.")
         return
 
-    cols = [c for c in ['PedidoID', 'ClienteID', 'Produto', 'Quantidade', 'Destino', 'Estado', 'Data', 'Avaliação'] if
-            c in filtrado.columns]
-    print("\n=== RESULTADO ===")
-    print(filtrado[cols].to_string(index=False))
+    print("\n" + "=" * 110)
+    header = f"{'ID':<4} | {'Cliente':<10} | {'Produto':<12} | {'Zona':<12} | {'Estado':<10} | {'Prioridade':<10} | {'Estafeta'}"
+    print(header)
+    print("-" * 110)
 
+    for e in encomendas:
+        estafeta = e.get("idEstafeta") if e.get("idEstafeta") else "---"
+        print(f"{e['id']:<4} | {e['idCliente']:<10} | {e['produto']:<12} | "
+              f"{e['zona']:<12} | {e['estado']:<10} | {e['prioridade']:<10} | {estafeta}")
 
-def gestor_main(produtosNome, produtosQtd, produtosPreco):
-    zonasAtendidas = ["Braga", "Guimarães"]
-    iD = [1001, 1002, 1003]
-    estadoEncomenda = ["Pendente"] * 3
-    zonaEncomendas = ["Braga", "Faro", "Guimarães"]
-    materiaisRequeridos = ["Nivelador", "Aparafusadora", "Serra"]
-    materiaisRequeridosQtd = [10, 2, 5]
-    profissionalZona = ["Guimarães", "Guimarães", "Braga"]
-    profissionalLivre = [True, False, True]
+    print("=" * 110)
 
-    print("Bem-vindo, qual o seu nome?")
-    nome = input()
+def aprovar_rejeitar_pedidos(zonas_atendidas):
     while True:
-        try:
-            load_all_client_csvs()
-        except Exception:
-            pass
+        encomendas = ler_csv("encomendas.csv")
+        pendentes = [e for e in encomendas if e["estado"] == ESTADO_PENDENTE]
 
-        opcoes = gestor_menu()
-
-        if opcoes == 1:
-            consultarEncomendas(iD, materiaisRequeridos, materiaisRequeridosQtd, zonaEncomendas, zonasAtendidas)
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 2:
-            consultarZonas(zonasAtendidas)
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 3:
-            consultarEstafetas(profissionalZona, profissionalLivre)
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 4:
-            encomendasAprovadas(produtosNome, produtosQtd, produtosPreco)
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 5:
-            df_pedidos = _normalizar_pedidos_schema(load_cliente_pedidos())
-            if df_pedidos is not None and not df_pedidos.empty:
-                print("\n=== PEDIDOS DO CLIENTE ===")
-                print(df_pedidos.to_string(index=False))
-            else:
-                print("Nenhum pedido do cliente encontrado.")
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 6:
-            df_eventos = _normalizar_eventos_schema(load_cliente_eventos())
-            if df_eventos is not None and not df_eventos.empty:
-                print("\n=== EVENTOS DE PEDIDOS (TRACKING) ===")
-                df_eventos = df_eventos.sort_values('Timestamp', ascending=True)
-                for _, evento in df_eventos.iterrows():
-                    pid_full = str(evento.get('PedidoID', 'N/A'))
-                    est = str(evento.get('Estado', 'N/A'))
-                    ts = str(evento.get('Timestamp', 'N/A'))
-                    desc = str(evento.get('Descricao', ''))[:40]
-                    track = str(evento.get('Tracking', ''))
-                    print(f"  {pid_full} | {est:20s} | {ts} | TRACK: {track} | {desc}")
-            else:
-                print("✗ Nenhum evento de pedido encontrado.")
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 7:
-            df_mensagens = load_cliente_mensagens()
-            if df_mensagens is not None and not df_mensagens.empty:
-                print("\n=== MENSAGENS (CONFIRMAÇÕES/AVISOS) ===")
-                print(df_mensagens.to_string(index=False))
-            else:
-                print("Nenhuma mensagem encontrada.")
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 8:
-            print("\n=== ALTERAR ESTADO DE PEDIDO ===")
-
-            pedido_id_input = input("Insira o ID do pedido: ").strip()
-            pedido_id = resolver_pedido_id(pedido_id_input)
-            if pedido_id != pedido_id_input:
-                print(f"✓ PedidoID resolvido automaticamente: {pedido_id}")
-
-            print("Estados disponíveis:")
-            for i, estado in enumerate(ESTADOS_PEDIDO, 1):
-                print(f"{i} - {estado}")
-
-            opcao_estado = int(input("Escolha o novo estado: ")) - 1
-
-            if 0 <= opcao_estado < len(ESTADOS_PEDIDO):
-                novo_estado = ESTADOS_PEDIDO[opcao_estado]
-                descricao = input("Descrição da alteração (opcional): ").strip()
-
-                cliente_id = pedido_id.split("_", 1)[0] if "_" in pedido_id else pedido_id
-                try:
-                    df_eventos = _normalizar_eventos_schema(load_eventos())
-                    if df_eventos is not None and not df_eventos.empty:
-                        evs = df_eventos[df_eventos['PedidoID'] == pedido_id]
-                        if not evs.empty:
-                            cliente_id = str(evs.iloc[0].get('ClienteID', cliente_id)).strip() or cliente_id
-                except Exception:
-                    cliente_id = pedido_id.split("_", 1)[0] if "_" in pedido_id else pedido_id
-
-                sucesso = alterar_estado_pedido(pedido_id, novo_estado, cliente_id, descricao)
-                if sucesso:
-                    print(f"✓ Estado do pedido {pedido_id} alterado para '{novo_estado}'")
-                else:
-                    print(f"✗ Erro ao alterar estado do pedido")
-            else:
-                print("Opção inválida.")
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 9:
-            print("\n=== HISTÓRICO DE Tracking ===")
-
-            pedido_id_input = input("Insira o ID do pedido: ").strip()
-            pedido_id = resolver_pedido_id(pedido_id_input)
-            if pedido_id != pedido_id_input:
-                print(f"✓ PedidoID resolvido automaticamente: {pedido_id}")
-
-            df_historico = obter_historico_pedido(pedido_id)
-
-            if not df_historico.empty:
-                print(f"\nPedido: {pedido_id}")
-                print("-" * 70)
-                for _, evento in df_historico.iterrows():
-                    ts = str(evento.get('Timestamp', ''))
-                    est = str(evento.get('Estado', ''))
-                    desc = str(evento.get('Descricao', ''))
-                    track = str(evento.get('Tracking', ''))
-                    print(f"{ts} | {est:20s} | TRACK: {track} | {desc}")
-                print("-" * 70)
-
-                estado_atual = obter_estado_atual_pedido(pedido_id)
-                print(f"\n➤ Estado Atual: {estado_atual}")
-            else:
-                print(f"✗ Nenhum evento encontrado para o pedido {pedido_id}")
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 10:
-            listar_pedidos_filtrados_estado_zona()
-            print("******************************")
-            voltar = 1
-
-        elif opcoes == 11:
-            voltar = 0
-
-        else:
-            print("Insira um número entre 1-11")
-            voltar = 1
-
-        if voltar != 1:
+        if not pendentes:
+            print("\nNenhum pedido pendente.")
             break
 
-    print("Sistema finalizado com sucesso")
+        print("\n--- PEDIDOS PENDENTES ---")
+        for e in pendentes:
+            sug = "APROVAR" if e["zona"] in zonas_atendidas else "ZONA FORA"
+            print(f"ID: {e['id']} | Produto: {e['produto']} | Zona: {e['zona']} | Sugestão: {sug}")
 
-
-# ------------------ Estafeta functions ------------------
-def aceitarRecusar(tarefas, anomalia, timestamps, estado, estadoAtual, contadorSucesso, contadorTarefas):
-    var_return = 0
-    print("Existem as seguintes encomendas atribuídas com os IDs no ínicio e contacto no final:")
-    for i in range(0, len(tarefas)):
-        print(str(1 + i) + ") " + tarefas[i])
-    while True:
-        print("Qual o ID da encomenda que pretende aceitar ou trocar de estado?(No caso de querer recusar digite outro número qualquer)")
-        idTarefa = int(input())
-        if 1 <= idTarefa <= len(tarefas):
-            print("Qual operação pretende executar:\n1-Aceitar atribuição;\n2- Trocar estado operacional da encomenda;")
-            x = int(input())
-            if x == 1:
-                print("O estado da sua tarefa está em recolha.")
-                estadoAtual[idTarefa - 1] = estado[0]
-                contadorTarefas[idTarefa - 1] = 1
-            else:
-                if x == 2:
-                    print("Digite para que estado pretende alterar a tarefa escolhida:")
-                    for i in range(0, len(estado)):
-                        print(str(i + 1) + ")" + estado[i])
-                    x = int(input())
-                    estadoAtual[idTarefa - 1] = estado[x - 1]
-                    print("A encomenda passou ao estado: " + estadoAtual[idTarefa - 1])
-                    if estadoAtual[idTarefa - 1] == "Concluído.":
-                        contadorSucesso[idTarefa - 1] = contadorSucesso[idTarefa - 1] + 1
-                    else:
-                        contadorSucesso[idTarefa - 1] = float(contadorSucesso[idTarefa - 1]) / 2
-                        contadorTarefas[idTarefa - 1] = 1
-        else:
-            print("Qual tarefa pretende recusar?")
-            idTarefa = int(input())
-            print("Qual o motivo para recusar a encomenda?")
-            for i in range(0, len(anomalia)):
-                print(str(i + 1) + ")" + anomalia[i])
-            motivo = int(input())
-            print("Introduza a data e hora no formato DD/MM/AAAA HH:MM.")
-            timestamp = input()
-            print("O motivo pela qual a encomenda não vai ser entregue é o seguinte: " + anomalia[motivo - 1] +
-                  " E a data e hora que o estafeta relatou a anomalia foi: " + timestamp)
-            timestamps[idTarefa - 1] = timestamp
-        print("Se pretender aceitar/ recusar/ trocar de estado alguma outra encomenda, digite 1.")
-        var_return = int(input())
-        if var_return != 1:
+        escolha = input("\nID para tratar (ou 's' para sair): ").strip()
+        if escolha.lower() == 's':
             break
 
+        alvo = next((e for e in pendentes if str(e["id"]) == escolha), None)
+        if not alvo:
+            print("ID inválido.")
+            continue
+
+        op = input("1-Aprovar, 2-Rejeitar, 3-Voltar: ")
+        if op == "1":
+            alvo["estado"] = ESTADO_APROVADA
+            registar_evento(alvo["id"], ESTADO_APROVADA)
+        elif op == "2":
+            alvo["estado"] = ESTADO_REJEITADA
+            registar_evento(alvo["id"], ESTADO_REJEITADA)
+
+        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+
+def cancelar_editar_encomenda():
+    encomendas = ler_csv("encomendas.csv")
+    if not encomendas:
+        return
+
+    id_alvo = input("\nID da encomenda a gerir: ").strip()
+    enc = next((e for e in encomendas if str(e["id"]) == id_alvo), None)
+    
+
+    if not enc:
+        print("ID não encontrado.")
+        return
+
+    if enc["estado"] not in [ESTADO_PENDENTE]:
+        print(f"Não pode editar uma encomenda '{enc['estado']}'.")
+        return
+
+    print("\n1. Cancelar Encomenda\n2. Editar (Zona/Prioridade)\n3. Voltar")
+    opcao = input("Opção: ")
+
+    if opcao == "1":
+        enc["estado"] = ESTADO_CANCELADA
+        registar_evento(id_alvo, ESTADO_CANCELADA)
+        print("✓ Cancelada.")
+    elif opcao == "2":
+        nova_zona = input(f"Nova Zona [{enc['zona']}]: ").strip()
+        nova_prio = input(f"Nova Prioridade [{enc['prioridade']}]: ").strip()
+        if nova_zona:
+            enc["zona"] = nova_zona
+        if nova_prio:
+            enc["prioridade"] = nova_prio
+        print("✓ Atualizada.")
+
+    guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+
+def filtrar_encomendas():
+    encomendas = ler_csv("encomendas.csv")
+    print("\nFiltrar por: 1-Estado | 2-Zona | 3-Cliente | 4-Produto")
+    op = input("Opção: ")
+
+    mapeamento = {"1": "estado", "2": "zona", "3": "idCliente", "4": "produto"}
+    campo = mapeamento.get(op)
+
+    if campo:
+        valor = input(f"Valor para {campo}: ").strip().lower()
+        resultados = [e for e in encomendas if valor in e.get(campo, "").lower()]
+
+        if resultados:
+            print(f"\nEncontradas {len(resultados)} encomendas:")
+            for r in resultados:
+                print(f"ID {r['id']} | Nome {r['idCliente']} |  {r['produto']} | {r['zona']} | {r['estado']}")
+        else:
+            print("Nenhum resultado.")
+
+def atribuir_estafetas():
+    encomendas = ler_csv("encomendas.csv")
+    estafetas = ler_csv("estafetas.csv")
+
+    criar_csv("atribuicoes.csv", COL_ATRIBUICOES)
+    atribuicoes = ler_csv("atribuicoes.csv")
+
+    proximo_atrib = obter_proximo_id("atribuicoes.csv", "idAtribuicao")
+    alterou = False
+
+    for e in encomendas:
+        if e["estado"] == ESTADO_APROVADA:
+            elegiveis = [
+                s for s in estafetas
+                if s["zona"].lower() == e["zona"].lower()
+                and s["disponibilidade"].lower() == "true"
+            ]
+
+            if elegiveis:
+                escolhido = min(elegiveis, key=lambda x: int(x["carga_trabalho"]))
+                e["estado"] = ESTADO_ATRIBUIDA
+                e["idEstafeta"] = escolhido["idEstafeta"]
+                escolhido["carga_trabalho"] = str(int(escolhido["carga_trabalho"]) + 1)
+
+                atribuicoes.append({
+                    "idAtribuicao": proximo_atrib,
+                    "idPedido": e["id"],
+                    "idEstafeta": escolhido["idEstafeta"],
+                    "dataAtribuicao": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                })
+
+                registar_evento(e["id"], ESTADO_ATRIBUIDA)
+                proximo_atrib += 1
+                alterou = True
+
+    if alterou:
+        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+        guardar_csv("estafetas.csv", COL_ESTAFETAS, estafetas)
+        guardar_csv("atribuicoes.csv", COL_ATRIBUICOES, atribuicoes)
+
+# ================= MENU =================
+
+def gestor_main():
+    criar_csv("encomendas.csv", COL_ENCOMENDAS)
+    criar_csv("eventos_pedido.csv", COL_EVENTOS)
+
+    ZONAS_ATENDIDAS = ["Braga", "Guimarães", "Famalicão", "Fafe"]
+
+    while True:
+        importar_pedidos_do_cliente()
+
+        print("\n" + "=" * 40)
+        print("     SISTEMA DE GESTÃO DE ENCOMENDAS")
+        print("=" * 40)
+        print("1. Aprovar/Rejeitar Pedidos")
+        print("2. Atribuir Estafetas")
+        print("3. Cancelar/Editar Encomenda")
+        print("4. Filtrar Encomendas")
+        print("5. Consultar todas as Encomendas")
+        print("6. Sair")
+
+        op = input("\nOpção: ")
+
+        if op == "1":
+            aprovar_rejeitar_pedidos(ZONAS_ATENDIDAS)
+        elif op == "2":
+            atribuir_estafetas()
+        elif op == "3":
+            cancelar_editar_encomenda()
+        elif op == "4":
+            filtrar_encomendas()
+        elif op == "5":
+            listar_todas()
+        elif op == "6":
+            break
+
+# ------------------ ------------------ ------------------ ------------------ Estafeta functions (JOÂO)---------------------------- ------------------ ------------------ ------------------ ------------------ --------
+
+# ------------------- CONFIGURAÇÃO DE CSV -------------------
+COL_ATRIBUICOES = ["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao", "decisao"]
+COL_ENCOMENDAS = ["id", "idOriginal", "idCliente", "origem", "destino", "dataCriacao", "janelaInicio", "janelaFim", "duracaoEstimadaMin", "zona", "prioridade", "estado", "idEstafeta"]
+COL_EVENTOS = ["idEvento", "idPedido", "estado", "utilizador", "idEstafeta", "localizacao", "timestamp"]
+COL_ESTAFETAS = ["idEstafeta", "nome", "zona", "disponibilidade", "carga_trabalho"]
+COL_ANOMALIAS = ["idAnomalia", "idPedido", "idEstafeta", "motivo", "descricao", "timestamp"]
+COL_MENSAGENS = ["ClienteID", "Tipo", "Mensagem", "Timestamp"]
+COL_METRICAS = ["idEstafeta", "nome", "tarefas_atribuidas", "aceites", "concluidas", "falhadas", "entregas_hoje", "entregas_mes", "taxa_sucesso", "media_estimativa_min", "media_actual_min", "media_tempo_min", "timestamp"]
+
+
+def garantir_csv(nome, colunas):
+    if not os.path.exists(nome):
+        with open(nome, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=colunas)
+            writer.writeheader()
+
+
+def ler_csv(nome):
+    if not os.path.exists(nome):
+        return []
+    with open(nome, "r", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def guardar_csv(nome, colunas, dados):
+    with open(nome, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=colunas)
+        writer.writeheader()
+        writer.writerows(dados)
+
+
+def append_row(nome, colunas, row):
+    garantir_csv(nome, colunas)
+    rows = ler_csv(nome)
+    rows.append(row)
+    guardar_csv(nome, colunas, rows)
+
+
+def obter_proximo_id(ficheiro, campo):
+    dados = ler_csv(ficheiro)
+    ids = [int(d[campo]) for d in dados if d.get(campo) and d[campo].isdigit()]
+    return max(ids, default=0) + 1
+
+
+def registar_evento(idPedido, novo_estado, utilizador="Estafeta", idEstafeta="", localizacao=""):
+    novo_id = obter_proximo_id("eventos_pedido.csv", "idEvento")
+    row = {
+        "idEvento": str(novo_id),
+        "idPedido": str(idPedido),
+        "estado": novo_estado,
+        "utilizador": utilizador,
+        "idEstafeta": str(idEstafeta) if idEstafeta is not None else "",
+        "localizacao": localizacao,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    append_row("eventos_pedido.csv", COL_EVENTOS, row)
+    atualizar_estado_por_evento(idPedido, novo_estado, idEstafeta) 
+
+
+def registar_anomalia(idPedido, idEstafeta, motivo, descricao=""):
+    row = {
+        "idAnomalia": str(obter_proximo_id("anomalias.csv", "idAnomalia")),
+        "idPedido": str(idPedido),
+        "idEstafeta": str(idEstafeta),
+        "motivo": motivo,
+        "descricao": descricao,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    append_row("anomalias.csv", COL_ANOMALIAS, row)
+
+
+def registar_mensagem(cliente_id, tipo, mensagem):
+    append_row("mensagens.csv", COL_MENSAGENS, {
+        "ClienteID": cliente_id,
+        "Tipo": tipo,
+        "Mensagem": mensagem,
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+
+def atualizar_estado_por_evento(idPedido, evento_estado, idEstafeta=""):
+    encomendas = ler_csv("encomendas.csv")
+    encom = next((e for e in encomendas if str(e.get("id")) == str(idPedido)), None)
+    if not encom:
+        return
+    s = str(evento_estado).lower()
+    rules = [("aceite", "atribuida"), ("atribu", "atribuida"), ("conclu", "concluida"), ("entreg", "concluida"), ("falh", "falhada"), ("recus", "rejeitada"), ("rejeitada", "rejeitada"), ("aprov", "aprovada"), ("cancel", "cancelada")]
+    novo = next((v for k, v in rules if k in s), None)
+    if novo:
+        encom["estado"] = novo
+        if idEstafeta:
+            encom["idEstafeta"] = str(idEstafeta)
+        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+
+
+def calcular_metricas(idEstafeta):
+    """Recalcula métricas a partir de eventos e encomendas (mais compacto)."""
+    eventos = ler_csv("eventos_pedido.csv")
+    encomendas = {str(e.get("id")): e for e in ler_csv("encomendas.csv")}
+    evs = [e for e in eventos if str(e.get("idEstafeta", "")).strip() == str(idEstafeta)]
+
+    from collections import defaultdict
+    grupos = defaultdict(list)
+    for e in evs:
+        if e.get("idPedido"): grupos[e.get("idPedido")].append(e)
+
+    tarefas_atribuidas = sum(1 for p, lst in grupos.items() if any("atribu" in (ev.get("estado","")) or "aceite" in (ev.get("estado","")) for ev in lst))
+    aceites = sum(1 for e in evs if "aceite" in (e.get("estado","")))
+    falhadas = sum(1 for e in evs if "falh" in (e.get("estado","")))
+
+    today = datetime.now()
+    entregas_hoje = entregas_mes = concluidas = 0
+    tempos = []
+    estimated = []
+
+    for p, lst in grupos.items():
+        t_aceite = next((datetime.strptime(e.get("timestamp"), "%Y-%m-%d %H:%M:%S") for e in lst if e.get("timestamp") and ("aceite" in e.get("estado","") or "atribu" in e.get("estado",""))), None)
+        t_concl = next((datetime.strptime(e.get("timestamp"), "%Y-%m-%d %H:%M:%S") for e in lst if e.get("timestamp") and ("conclu" in e.get("estado","") or "entreg" in e.get("estado",""))), None)
+        if t_concl:
+            concluidas += 1
+            if t_concl.date() == today.date(): entregas_hoje += 1
+            if t_concl.year == today.year and t_concl.month == today.month: entregas_mes += 1
+        if t_aceite and t_concl and t_concl >= t_aceite:
+            tempos.append((t_concl - t_aceite).total_seconds() / 60.0)
+        enc = encomendas.get(str(p))
+        if enc and enc.get("duracaoEstimadaMin"):
+            try: estimated.append(float(enc.get("duracaoEstimadaMin")))
+            except Exception: pass
+
+    media_tempo = sum(tempos)/len(tempos) if tempos else None
+    media_estimativa = sum(estimated)/len(estimated) if estimated else None
+    taxa_sucesso = (concluidas / tarefas_atribuidas * 100.0) if tarefas_atribuidas else None
+
+    est = next((x for x in ler_csv("estafetas.csv") if str(x.get("idEstafeta")) == str(idEstafeta)), {})
+    return {"idEstafeta": str(idEstafeta), "nome": est.get("nome",""), "tarefas_atribuidas": tarefas_atribuidas, "aceites": aceites, "concluidas": concluidas, "falhadas": falhadas, "entregas_hoje": entregas_hoje, "entregas_mes": entregas_mes, "taxa_sucesso": taxa_sucesso, "media_estimativa_min": media_estimativa, "media_actual_min": media_tempo, "media_tempo_min": media_tempo}
+
+
+def mostrar_metricas(idEstafeta, gravar=False):
+    m = calcular_metricas(idEstafeta)
+    print("--- Métricas pessoais ---")
+    print(f"Estafeta: {m.get('nome','(desconhecido)')} (id {m.get('idEstafeta')})")
+    print(f"Tarefas atribuídas (únicas): {m.get('tarefas_atribuidas')}")
+    print(f"Aceites: {m.get('aceites')}")
+    print(f"Concluídas: {m.get('concluidas')}")
+    print(f"Falhadas: {m.get('falhadas')}")
+    print(f"Entregas hoje: {m.get('entregas_hoje')}")
+    print(f"Entregas este mês: {m.get('entregas_mes')}")
+    if m.get('taxa_sucesso') is not None:
+        print(f"Taxa de sucesso: {m.get('taxa_sucesso'):.1f}%")
+    else:
+        print("Taxa de sucesso: N/A")
+    if m.get('media_estimativa_min') is not None:
+        print(f"Média estimada (min): {m.get('media_estimativa_min'):.1f} min")
+    else:
+        print("Média estimada: N/A")
+    if m.get('media_actual_min') is not None:
+        print(f"Média real (min) entre aceite e conclusão: {m.get('media_actual_min'):.1f} min")
+    else:
+        print("Média real: N/A")
+    if m.get('media_tempo_min') is not None:
+        print(f"Tempo médio (min) entre aceite e conclusão: {m.get('media_tempo_min'):.1f} min")
+    else:
+        print("Tempo médio: N/A")
+
+    if gravar:
+        garantir_csv("metricas_estafeta.csv", COL_METRICAS)
+        metricas = ler_csv("metricas_estafeta.csv")
+        registro = {
+            "idEstafeta": m.get("idEstafeta"),
+            "nome": m.get("nome"),
+            "tarefas_atribuidas": str(m.get("tarefas_atribuidas") or 0),
+            "aceites": str(m.get("aceites") or 0),
+            "concluidas": str(m.get("concluidas") or 0),
+            "falhadas": str(m.get("falhadas") or 0),
+            "entregas_hoje": str(m.get("entregas_hoje") or 0),
+            "entregas_mes": str(m.get("entregas_mes") or 0),
+            "taxa_sucesso": f"{m.get('taxa_sucesso'):.2f}" if m.get('taxa_sucesso') is not None else "",
+            "media_estimativa_min": f"{m.get('media_estimativa_min'):.2f}" if m.get('media_estimativa_min') is not None else "",
+            "media_actual_min": f"{m.get('media_actual_min'):.2f}" if m.get('media_actual_min') is not None else "",
+            "media_tempo_min": f"{m.get('media_tempo_min'):.2f}" if m.get('media_tempo_min') is not None else "",
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        # atualizar ou adicionar
+        existente = next((x for x in metricas if x.get("idEstafeta") == registro["idEstafeta"]), None)
+        if existente:
+            metricas = [registro if x.get("idEstafeta") == registro["idEstafeta"] else x for x in metricas]
+        else:
+            metricas.append(registro)
+        guardar_csv("metricas_estafeta.csv", COL_METRICAS, metricas)
+        print("Métricas gravadas em 'metricas_estafeta.csv'.")
+
+
+# ------------------- OPERACIONAL DO ESTAFETA -------------------
+
+anomalia = [
+    "Endereço incorreto.",
+    "Cliente ausente.",
+    "Avaria no veículo.",
+    "Condições metereológicas adversas.",
+    "Produto danificado."
+]
+
+ESTADOS_POSIVEIS = [
+    "em recolha",
+    "em distribuição",
+    "concluído",
+    "falhado"
+]
+
+def encontrar_ou_criar_estafeta(nome):
+    garantir_csv("estafetas.csv", COL_ESTAFETAS)
+    estafetas = ler_csv("estafetas.csv")
+    for e in estafetas:
+        if e.get("nome", "").strip().lower() == nome.strip().lower():
+            return e["idEstafeta"]
+
+    novo_id = obter_proximo_id("estafetas.csv", "idEstafeta")
+    novo = {"idEstafeta": str(novo_id), "nome": nome, "zona": "", "disponibilidade": "true", "carga_trabalho": "0"}
+    estafetas.append(novo)
+    guardar_csv("estafetas.csv", COL_ESTAFETAS, estafetas)
+    return str(novo_id)
+
+def tarefas_do_estafeta(idEstafeta):
+    garantir_csv("atribuicoes.csv", COL_ATRIBUICOES)
+    garantir_csv("encomendas.csv", COL_ENCOMENDAS)
+    atribuicoes = ler_csv("atribuicoes.csv")
+    encomendas = ler_csv("encomendas.csv")
+
+    tarefas = []
+    mapping = []  # same order: mapping[i] -> idPedido
+    for a in atribuicoes:
+        if a.get("idEstafeta") == str(idEstafeta):
+            idPedido = a.get("idPedido")
+            encom = next((x for x in encomendas if str(x.get("id")) == str(idPedido)), None)
+            if encom:
+                display = f"ID {encom.get('id')} | Destino: {encom.get('destino','')} | Estado: {encom.get('estado','')} | Atribuição: {a.get('dataAtribuicao','')} | Decisão: {a.get('decisao','') or 'N/A'}"
+                tarefas.append(display)
+                mapping.append(str(idPedido))
+    return tarefas, mapping
 
 def tarefasAtribuidas(tarefas):
     print("---Lista de tarefas atribuídas---")
-    for i in range(0, len(tarefas)):
-        print(str(i + 1) + ") " + tarefas[i])
+    if not tarefas:
+        print("(Não existem tarefas atribuídas.)")
+        return
+    for i, t in enumerate(tarefas, start=1):
+        print(str(i) + ") " + t)
 
+def aceitarRecusar(tarefas, mapping, idEstafeta):
+    if not tarefas:
+        print("Não tem tarefas atribuídas.")
+        return
 
-def estafeta_menu():
-    print("----MENU ESTAFETA----")
-    print("1) Lista de tarefas atribuídas;")
-    print("2) Aceitar e recusar atribuição e trocar estado operacional de encomenda;")
-    print("3) Registar localização;")
-    print("4) Reportar anomalias;")
-    print("5) Consultar dados pessoais;")
-    print("6) Sair;")
-    opcao = int(input())
-    return opcao
+    garantir_csv("atribuicoes.csv", COL_ATRIBUICOES)
+    garantir_csv("encomendas.csv", COL_ENCOMENDAS)
+    garantir_csv("eventos_pedido.csv", COL_EVENTOS)
 
-
-def estafeta_main():
-    contadorTarefas = [0] * 4
-    contadorSucesso = [0] * 4
-    timestamps = [""] * 4
-    anomalia = [""] * 5
-    estadoAtual = [""] * 4
-    localizacao = [""] * 4
-    tarefas = [""] * 4
-    estado = [""] * 4
-
-    anomalia[0] = "Endereço incorreto."
-    anomalia[1] = "Cliente ausente."
-    anomalia[2] = "Avaria no veículo."
-    anomalia[3] = "Condições metereológicas adversas."
-    anomalia[4] = "Produto danificado."
-    tarefas[0] = "Lisboa, Porto, 966607184"
-    tarefas[1] = "Guimarães, Fafe, 93456064"
-    tarefas[2] = "Bragança, Alentejo, 92349599"
-    tarefas[3] = "Póvoa de Varzim, guimarães, 912345678"
-    estado[0] = "Em recolha."
-    estado[1] = "Em distribuição."
-    estado[2] = "Concluído."
-    estado[3] = "Falhado."
-    menuCall = 0
-    print("Seja bem vindo ao portal do estafeta, qual o seu nome?")
-    nome = input()
-    print("O que o/a " + nome + " deseja fazer?")
-    for i in range(0, len(contadorTarefas)):
-        contadorTarefas[i] = 0
-    for i in range(0, len(contadorSucesso)):
-        contadorSucesso[i] = 0
+    atribuicoes = ler_csv("atribuicoes.csv")
+    encomendas = ler_csv("encomendas.csv")
 
     while True:
-        opcao = estafeta_menu()
-        if opcao == 1:
-            tarefasAtribuidas(tarefas)
-            menuCall = 1
-        else:
-            if opcao == 2:
-                aceitarRecusar(tarefas, anomalia, timestamps, estado, estadoAtual, contadorSucesso, contadorTarefas)
-                print("Deseja fazer mais alguma operação? Se sim digite 1.")
-                menuCall = int(input())
-            else:
-                if opcao == 3:
-                    print("Qual o ID da tarefa que está a realizar?")
-                    tarefasAtribuidas(tarefas)
-                    idTarefa = int(input())
-                    print("Qual a sua localização atual.")
-                    loc = input()
-                    print("A sua localização foi registada: " + loc)
-                    tarefas[idTarefa - 1] = loc
-                    print("Deseja fazer mais alguma operação? Se sim digite 1.")
-                    menuCall = int(input())
-                else:
-                    if opcao == 4:
-                        print("Qual o ID da sua tarefa?")
-                        tarefasAtribuidas(tarefas)
-                        idTarefa = int(input())
-                        print("Qual o motivo da anomalia?")
-                        textoLivre = input()
-                        print("Deseja realizar mais alguma operação? Se sim digite 1.")
-                        menuCall = int(input())
-                    else:
-                        if opcao == 5:
-                            print("Qual o ID da sua tarefa?")
-                            idTarefa = int(input())
-                            contadorSucesso[idTarefa - 1] = float(contadorTarefas[idTarefa - 1]) / 2 * 100
-                            print("Tarefas realizadas: " + str(contadorTarefas[idTarefa - 1]))
-                            print("Taxa de sucesso: " + str(contadorSucesso[idTarefa - 1]) + "%")
-                        else:
-                            menuCall = 0
-        if menuCall != 1:
+        tarefasAtribuidas(tarefas)
+        print("Escolha o número da tarefa que pretende gerir (0 para sair):")
+        escolha = input().strip()
+        if not escolha.isdigit() or int(escolha) == 0:
             break
-    print("Obrigado por trabalhar connosco!")
+        idx = int(escolha) - 1
+        if idx < 0 or idx >= len(mapping):
+            print("Escolha inválida.")
+            continue
 
+        idPedido = mapping[idx]
+        encom = next((x for x in encomendas if str(x.get("id")) == str(idPedido)), None)
+        atrib = next((x for x in atribuicoes if str(x.get("idPedido")) == str(idPedido) and x.get("idEstafeta") == str(idEstafeta)), None)
 
-# ------------------ Portal Gestão de Produtos ------------------
-def calcfinal_prod(pedidoprodutoQtd, materialsPrice):
+        print("Qual operação pretende executar:\n1 - Aceitar atribuição\n2 - Trocar estado operacional da encomenda\n3 - Recusar atribuição")
+        op = input().strip()
+
+        if op == "1":
+            # Aceitar atribuicao -> marcar como atribuida
+            encom["estado"] = "atribuida"
+            if atrib:
+                atrib["decisao"] = "aceite"
+                atrib["dataAtribuicao"] = atrib.get("dataAtribuicao") or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+            guardar_csv("atribuicoes.csv", COL_ATRIBUICOES, atribuicoes)
+            registar_evento(idPedido, "aceite", utilizador="Estafeta", idEstafeta=idEstafeta)
+            print(f"Encomenda {idPedido} aceite e estado alterado para 'atribuida'.")
+
+        elif op == "2":
+            print("Digite para que estado pretende alterar a tarefa escolhida:")
+            for i, s in enumerate(ESTADOS_POSIVEIS, start=1):
+                print(f"{i}) {s}")
+            x = input().strip()
+            if x.isdigit() and 1 <= int(x) <= len(ESTADOS_POSIVEIS):
+                novo = ESTADOS_POSIVEIS[int(x) - 1]
+                encom["estado"] = novo
+                guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+
+                # Se o novo estado for recolha/entrega/falha, pedir localização para guardar no evento
+                loc = ""
+                if any(k in novo.lower() for k in ["recol", "conclu", "entreg", "falh"]):
+                    loc = input("Introduza a localização (morada ou coordenadas) para registar no evento (deixe vazio para omitir): ").strip()
+
+                registar_evento(idPedido, novo, utilizador="Estafeta", idEstafeta=idEstafeta, localizacao=loc)
+                print(f"A encomenda passou ao estado: {novo}")
+            else:
+                print("Estado inválido.")
+
+        elif op == "3":
+            print("Qual o motivo para recusar a encomenda?")
+            for i, m in enumerate(anomalia, start=1):
+                print(f"{i}) {m}")
+            motivo = input().strip()
+            motivo_text = ""
+            if motivo.isdigit() and 1 <= int(motivo) <= len(anomalia):
+                motivo_text = anomalia[int(motivo) - 1]
+            else:
+                motivo_text = input("Descreva o motivo: ")
+
+            encom["estado"] = "rejeitada"
+            if atrib:
+                atrib["decisao"] = "recusado"
+            guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+            guardar_csv("atribuicoes.csv", COL_ATRIBUICOES, atribuicoes)
+            registar_evento(idPedido, f"recusado: {motivo_text}", utilizador="Estafeta", idEstafeta=idEstafeta)
+            # Registar anomalia e notificar gestor
+            registar_anomalia(idPedido, idEstafeta, motivo_text, descricao=motivo_text)
+            registar_mensagem("gestor", "Anomalia", f"Anomalia reportada no pedido {idPedido} por estafeta {idEstafeta}: {motivo_text}")
+            print(f"A encomenda {idPedido} foi recusada com motivo: {motivo_text}")
+
+        else:
+            print("Opção inválida.")
+
+        cont = input("Se pretender gerir outra encomenda digite 1, caso contrário digite outro número: ")
+        if cont.strip() != "1":
+            break
+
+# ------------------- MENU PRINCIPAL -------------------
+def menu():
+    garantir_csv("encomendas.csv", COL_ENCOMENDAS)
+    garantir_csv("eventos_pedido.csv", COL_EVENTOS)
+    garantir_csv("atribuicoes.csv", COL_ATRIBUICOES)
+    garantir_csv("estafetas.csv", COL_ESTAFETAS)
+
+    print("----MENU----")
+    print("1) Lista de tarefas atribuídas;")
+    print("2) Aceitar/Recusar atribuição ou trocar estado;")
+    print("3) Registar localização (gera evento);")
+    print("4) Reportar anomalias;")
+    print("5) Consultar dados pessoais;")
+    print("6) Mostrar métricas pessoais;")
+    print("7) Sair;")
+
+    opcao = input().strip()
+    return opcao
+def estafeta_main():
+    print("Seja bem vindo ao portal do estafeta, qual o seu nome?")
+    nome = input().strip()
+    idEstafeta = encontrar_ou_criar_estafeta(nome)
+    print(f"Olá {nome} (id {idEstafeta})! O que desejas fazer?")
+
+    while True:
+        opc = menu()
+        if opc == "1":
+            tarefas, mapping = tarefas_do_estafeta(idEstafeta)
+            tarefasAtribuidas(tarefas)
+
+        elif opc == "2":
+            tarefas, mapping = tarefas_do_estafeta(idEstafeta)
+            aceitarRecusar(tarefas, mapping, idEstafeta)
+
+        elif opc == "3":
+            tarefas, mapping = tarefas_do_estafeta(idEstafeta)
+            tarefasAtribuidas(tarefas)
+            print("Qual o ID do pedido (número) que está a realizar?")
+            idPedido = input().strip()
+            loc = input("Qual a sua localização atual: ")
+            registar_evento(idPedido, f"localizacao: {loc}", utilizador=nome, idEstafeta=idEstafeta, localizacao=loc)
+            print("Localização registada.")
+
+        elif opc == "4":
+            tarefas, mapping = tarefas_do_estafeta(idEstafeta)
+            tarefasAtribuidas(tarefas)
+            print("Qual o ID do seu pedido?")
+            idPedido = input().strip()
+            motivo = input("Descreva a anomalia: ")
+            registar_evento(idPedido, f"anomalia: {motivo}", utilizador=nome, idEstafeta=idEstafeta)
+            # opcionalmente marcar como rejeitada
+            encomendas = ler_csv("encomendas.csv")
+            encom = next((x for x in encomendas if str(x.get("id")) == str(idPedido)), None)
+            if encom:
+                encom["estado"] = "rejeitada"
+                guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
+                print("Encomenda marcada como rejeitada e evento registado.")
+
+        elif opc == "5":
+            estafetas = ler_csv("estafetas.csv")
+            est = next((x for x in estafetas if x.get("idEstafeta") == str(idEstafeta)), None)
+            tarefas, mapping = tarefas_do_estafeta(idEstafeta)
+            print(f"Nome: {est.get('nome')}")
+            print(f"Tarefas atribuídas: {len(tarefas)}")
+            print(f"Carga de trabalho (registada): {est.get('carga_trabalho')}")
+
+        elif opc == "6":
+            salvar = input("Deseja gravar métricas em 'metricas_estafeta.csv'? (s/n): ").strip().lower().startswith('s')
+            mostrar_metricas(idEstafeta, gravar=salvar)
+        
+        elif opc == "7":
+            print("Obrigado por trabalhar connosco!")
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+
+# ------------------------------------------------------------------------------------------ Portal Gestão de Produtos (MARIA)------------------------------------------------------------------------------------------
+ 
+def calcfinal(pedidoprodutoQtd, materials):
+    # Calculate the total price of items in the cart
     endcalc = 0
-    for i in range(0, len(pedidoprodutoQtd)):
-        endcalc = endcalc + pedidoprodutoQtd[i] * materialsPrice[i]
+    for i in range(len(pedidoprodutoQtd)):
+        endcalc += pedidoprodutoQtd[i] * materials[i]['preco']
     return endcalc
 
+def materialconsultation(materials):
+    # Display all active items with their details
+    for material in materials:
+        if material['ativo']:
+            tipo_str = "Produto" if material['tipo'] == 'produto' else "Serviço"
+            stock_str = str(material['stock']) if material['stock'] is not None else 'N/A'
+            print(f"{material['nome']} ({tipo_str}): {material['preco']}€ || stock: {stock_str}")
 
-def materialconsultation_prod(materialsName, materialsPrice, materialsQtd):
-    for i in range(0, len(materialsName)):
-        print(materialsName[i] + ": " + str(materialsPrice[i]) + "€ || stock : " + str(materialsQtd[i]))
-
-
-def gestao_produtos_menu():
-    print("Menu Gestão de Produtos:")
-    print("1 - Consultar materiais")
-    print("2 - Colocar materiais no carrinho")
+def gestao_produtos_main():
+    # Display the main menu and get user choice
+    print("Menu:")
+    print("1 - consultar materiais ")
+    print("2 - Colocar materias no carrinho ")
     print("3 - Finalização do pedido")
-    print("4 - Sair")
+    print("4 - Adicionar novo material")
+    print("5 - Filtrar materiais")
+    print("6 - Registrar entrada de stock")
+    print("7 - Gerir serviços")
+    print("8 - Ver indicadores")
+    print("9 - Editar item do catálogo")
+    print("10 - Remover item do catálogo")
+    print("11 - Listar por categoria")
+    print("12 - Listar por faixa de preço")
+    print("13 - Listar itens ativos")
+    print("14 - Listar produtos sem stock")
     option = int(input())
     return option
 
-
-def stockupdate_prod(materialsQtd, pedidoprodutoQtd):
-    for i in range(0, len(pedidoprodutoQtd)):
-        materialsQtd[i] = materialsQtd[i] - pedidoprodutoQtd[i]
-
-
-def validstock_prod(materialsQtd, pedidoprodutoQtd, materialsName):
-    for i in range(0, len(pedidoprodutoQtd)):
+def stockupdate(materials, pedidoprodutoQtd):
+    for i in range(len(pedidoprodutoQtd)):
         if pedidoprodutoQtd[i] > 0:
-            if pedidoprodutoQtd[i] > materialsQtd[i]:
-                print("A sua encomenda ultrapassa o nosso limite de stock de " + materialsName[i])
-            else:
-                print("A sua encomenda de " + materialsName[i] + " foi validada com sucesso")
+            if materials[i]['stock'] is not None:
+                if materials[i]['stock'] - pedidoprodutoQtd[i] < 0:
+                    print(f"Erro: Operação resultaria em stock negativo para {materials[i]['nome']}. Operação bloqueada.")
+                    pedidoprodutoQtd[i] = 0  # reset to prevent
+                    continue
+                materials[i]['stock'] -= pedidoprodutoQtd[i]
+                log_stock_movement(materials[i]['id'], 'saida', pedidoprodutoQtd[i], 'venda')
 
+def validstock(materials, pedidoprodutoQtd):
+    for i in range(len(pedidoprodutoQtd)):
+        if pedidoprodutoQtd[i] > 0:
+            if materials[i]['stock'] is not None and pedidoprodutoQtd[i] > materials[i]['stock']:
+                print(f" A sua encomenda ultrapassa o nosso limite de stock de {materials[i]['nome']}")
+            else:
+                print(f"A sua encomenda de {materials[i]['nome']} foi validada com sucesso")
+
+def add_new_material(materials):
+    tipo = input("Tipo (produto/servico): ").lower().strip()
+    if tipo not in ['produto', 'servico']:
+        print("Tipo deve ser produto ou servico")
+        return
+    nome = input("Nome do material/serviço: ")
+    descricao = input("Descrição: ")
+    categoria = input("Categoria: ")
+    preco = float(input("Preço: "))
+    if preco < 0:
+        print("Preço deve ser >= 0")
+        return
+    if tipo == 'servico':
+        duracao_str = input("Duração padrão em minutos: ")
+        try:
+            duracaoPadraoMin = int(duracao_str)
+            if duracaoPadraoMin <= 0:
+                print("Duração deve ser positiva.")
+                return
+        except ValueError:
+            print("Duração inválida.")
+            return
+        stock = None
+    else:
+        duracao_str = input("Duração padrão em minutos (opcional, pressione Enter para pular): ")
+        duracaoPadraoMin = int(duracao_str) if duracao_str else None
+        stock_str = input("Stock (opcional, pressione Enter para pular): ")
+        stock = int(stock_str) if stock_str else None
+        if stock is not None and stock < 0:
+            print("Stock deve ser >= 0")
+            return
+    ativo_str = input("Ativo (true/false): ").lower()
+    if ativo_str not in ['true', 'false']:
+        print("Ativo deve ser true ou false")
+        return
+    ativo = ativo_str == 'true'
+    
+    # Auto ID
+    if materials:
+        new_id = max(m['id'] for m in materials) + 1
+    else:
+        new_id = 0
+    
+    new_material = {
+        'id': new_id,
+        'tipo': tipo,
+        'nome': nome,
+        'descricao': descricao,
+        'categoria': categoria,
+        'preco': preco,
+        'duracaoPadraoMin': duracaoPadraoMin,
+        'stock': stock,
+        'ativo': ativo
+    }
+    materials.append(new_material)
+    save_catalog(materials)
+    print("Material/Serviço adicionado com sucesso!")
+
+def edit_item(materials):
+    try:
+        id_to_edit = int(input("Digite o ID do item a editar: "))
+    except ValueError:
+        print("ID inválido.")
+        return
+    
+    item = None
+    for m in materials:
+        if m['id'] == id_to_edit:
+            item = m
+            break
+    
+    if item is None:
+        print(f"Item com ID {id_to_edit} não encontrado.")
+        return
+    
+    print("Item atual:")
+    print(f"Nome: {item['nome']}")
+    print(f"Tipo: {item['tipo']}")
+    print(f"Preço: {item['preco']}")
+    print(f"Descrição: {item['descricao']}")
+    print(f"Ativo: {item['ativo']}")
+    
+    while True:
+        print("O que deseja alterar?")
+        print("1 - Preço")
+        print("2 - Descrição")
+        print("3 - Ativar/Desativar")
+        print("4 - Sair")
+        try:
+            choice = int(input("Opção: "))
+        except ValueError:
+            print("Opção inválida.")
+            continue
+        
+        if choice == 1:
+            try:
+                new_price = float(input("Novo preço: "))
+                if new_price < 0:
+                    print("Preço não pode ser negativo.")
+                    continue
+                item['preco'] = new_price
+                print("Preço alterado com sucesso.")
+            except ValueError:
+                print("Preço inválido.")
+        
+        elif choice == 2:
+            new_desc = input("Nova descrição: ")
+            item['descricao'] = new_desc
+            print("Descrição alterada com sucesso.")
+        
+        elif choice == 3:
+            ativo_str = input("Ativo (true/false): ").lower().strip()
+            if ativo_str not in ['true', 'false']:
+                print("Valor deve ser true ou false.")
+                continue
+            item['ativo'] = ativo_str == 'true'
+            print("Status ativo alterado com sucesso.")
+        
+        elif choice == 4:
+            break
+        
+        else:
+            print("Opção inválida.")
+    
+    save_catalog(materials)
+    print("Alterações salvas.")
+
+def remove_item(materials, turnos):
+    try:
+        id_to_remove = int(input("Digite o ID do item a remover: "))
+    except ValueError:
+        print("ID inválido.")
+        return
+    
+    item = None
+    for m in materials:
+        if m['id'] == id_to_remove:
+            item = m
+            break
+    
+    if item is None:
+        print(f"Item com ID {id_to_remove} não encontrado.")
+        return
+    
+    print("Item a remover:")
+    print(f"Nome: {item['nome']}")
+    print(f"Tipo: {item['tipo']}")
+    print(f"Preço: {item['preco']}")
+    print(f"Descrição: {item['descricao']}")
+    print(f"Ativo: {item['ativo']}")
+    
+    confirm = input("Tem certeza que deseja remover este item? (s/n): ").lower().strip()
+    if confirm != 's':
+        print("Remoção cancelada.")
+        return
+    
+    materials.remove(item)
+    # Remove associated turnos
+    turnos[:] = [t for t in turnos if t['id'] != id_to_remove]
+    
+    save_catalog(materials)
+    save_turnos(turnos)
+    print("Item removido com sucesso.")
+
+def list_by_category(materials):
+    category = input("Categoria: ").strip()
+    filtered = []
+    for m in materials:
+        if m['categoria'].lower() == category.lower():
+            filtered.append(m)
+    if not filtered:
+        print(f"Nenhum item encontrado na categoria '{category}'.")
+        return
+    print(f"Itens na categoria '{category}':")
+    for m in filtered:
+        tipo_str = "Produto" if m['tipo'] == 'produto' else "Serviço"
+        stock_str = str(m['stock']) if m['stock'] is not None else 'N/A'
+        print(f"{m['nome']} ({tipo_str}): {m['preco']}€ || stock: {stock_str}")
+
+def list_by_price_range(materials):
+    try:
+        min_price = float(input("Preço mínimo: "))
+        max_price = float(input("Preço máximo: "))
+        if min_price < 0 or max_price < 0 or min_price > max_price:
+            print("Valores inválidos.")
+            return
+    except ValueError:
+        print("Preços inválidos.")
+        return
+    filtered = []
+    for m in materials:
+        if min_price <= m['preco'] <= max_price:
+            filtered.append(m)
+    if not filtered:
+        print(f"Nenhum item encontrado na faixa de preço {min_price}€ - {max_price}€.")
+        return
+    print(f"Itens na faixa de preço {min_price}€ - {max_price}€:")
+    for m in filtered:
+        tipo_str = "Produto" if m['tipo'] == 'produto' else "Serviço"
+        stock_str = str(m['stock']) if m['stock'] is not None else 'N/A'
+        print(f"{m['nome']} ({tipo_str}): {m['preco']}€ || stock: {stock_str}")
+
+def list_active_items(materials):
+    filtered = []
+    for m in materials:
+        if m['ativo']:
+            filtered.append(m)
+    if not filtered:
+        print("Nenhum item ativo encontrado.")
+        return
+    print("Itens ativos:")
+    for m in filtered:
+        tipo_str = "Produto" if m['tipo'] == 'produto' else "Serviço"
+        stock_str = str(m['stock']) if m['stock'] is not None else 'N/A'
+        print(f"{m['nome']} ({tipo_str}): {m['preco']}€ || stock: {stock_str}")
+
+def list_out_of_stock_products(materials):
+    filtered = []
+    for m in materials:
+        if m['tipo'] == 'produto' and m['stock'] == 0:
+            filtered.append(m)
+    if not filtered:
+        print("Nenhum produto sem stock encontrado.")
+        return
+    print("Produtos sem stock:")
+    for m in filtered:
+        print(f"{m['nome']}: {m['preco']}€")
+
+def filter_materials(materials):
+    print("Filtros (pressione Enter para ignorar):")
+    tipo = input("Tipo (produto/servico/ambos): ").lower().strip()
+    categoria = input("Categoria: ").strip()
+    preco_min_str = input("Preço mínimo: ").strip()
+    preco_max_str = input("Preço máximo: ").strip()
+    ativo_str = input("Ativo (true/false/ambos): ").lower().strip()
+    stock_min_str = input("Stock mínimo: ").strip()
+    
+    tipo_filter = None
+    if tipo == 'produto':
+        tipo_filter = 'produto'
+    elif tipo == 'servico':
+        tipo_filter = 'servico'
+    
+    preco_min = float(preco_min_str) if preco_min_str else None
+    preco_max = float(preco_max_str) if preco_max_str else None
+    stock_min = int(stock_min_str) if stock_min_str else None
+    ativo_filter = None
+    if ativo_str == 'true':
+        ativo_filter = True
+    elif ativo_str == 'false':
+        ativo_filter = False
+    
+    filtered = []
+    for m in materials:
+        if tipo_filter and m['tipo'] != tipo_filter:
+            continue
+        if categoria and m['categoria'].lower() != categoria.lower():
+            continue
+        if preco_min is not None and m['preco'] < preco_min:
+            continue
+        if preco_max is not None and m['preco'] > preco_max:
+            continue
+        if ativo_filter is not None and m['ativo'] != ativo_filter:
+            continue
+        if stock_min is not None and (m['stock'] is None or m['stock'] < stock_min):
+            continue
+        filtered.append(m)
+    
+    # Print table
+    if not filtered:
+        print("Nenhum material encontrado com os filtros aplicados.")
+        return
+    
+    print(f"{'ID':<5} {'Tipo':<10} {'Nome':<20} {'Categoria':<15} {'Preço':<10} {'Stock':<10} {'Ativo':<6}")
+    print("-" * 80)
+    for m in filtered:
+        tipo_str = "Produto" if m['tipo'] == 'produto' else "Serviço"
+        stock_str = str(m['stock']) if m['stock'] is not None else 'N/A'
+        ativo_str = 'Sim' if m['ativo'] else 'Não'
+        print(f"{m['id']:<5} {tipo_str:<10} {m['nome']:<20} {m['categoria']:<15} {m['preco']:<10.2f} {stock_str:<10} {ativo_str:<6}")
+
+def log_stock_movement(id, tipo, quantidade, motivo):
+    filename = 'stock_movements.csv'
+    file_exists = os.path.exists(filename)
+    with open(filename, 'a', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['id', 'tipo', 'quantidade', 'data_hora', 'motivo']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow({
+            'id': id,
+            'tipo': tipo,
+            'quantidade': quantidade,
+            'data_hora': datetime.now().isoformat(),
+            'motivo': motivo
+        })
+
+def register_stock_entry(materials):
+    print("Materiais disponíveis:")
+    for i, m in enumerate(materials):
+        if m['tipo'] == 'produto':
+            print(f"{i}: {m['nome']} (Stock atual: {m['stock']})")
+    try:
+        idx = int(input("Índice do material: "))
+        if idx < 0 or idx >= len(materials) or materials[idx]['tipo'] != 'produto':
+            print("Índice inválido ou não é produto.")
+            return
+        quantidade = int(input("Quantidade a adicionar: "))
+        if quantidade <= 0:
+            print("Quantidade deve ser positiva.")
+            return
+        motivo = input("Motivo da entrada: ").strip()
+        materials[idx]['stock'] = (materials[idx]['stock'] or 0) + quantidade
+        log_stock_movement(materials[idx]['id'], 'entrada', quantidade, motivo)
+        save_catalog(materials)
+        print("Entrada de stock registrada com sucesso.")
+    except ValueError:
+        print("Entrada inválida.")
+
+def load_turnos(filename='turnos.csv'):
+    turnos = []
+    if os.path.exists(filename):
+        with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                turno = {
+                    'id': int(row.get('id', row.get('idItem', 0))),
+                    'data': row['data'],
+                    'hora_inicio': row['hora_inicio'],
+                    'hora_fim': row['hora_fim'],
+                    'disponivel': row['disponivel'].lower() == 'true'
+                }
+                turnos.append(turno)
+    return turnos
+
+def save_turnos(turnos, filename='turnos.csv'):
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['id', 'data', 'hora_inicio', 'hora_fim', 'disponivel']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for turno in turnos:
+            writer.writerow({
+                'id': turno['id'],
+                'data': turno['data'],
+                'hora_inicio': turno['hora_inicio'],
+                'hora_fim': turno['hora_fim'],
+                'disponivel': str(turno['disponivel'])
+            })
+
+def generate_slots(materials, turnos):
+    print("Serviços disponíveis:")
+    services = [m for m in materials if m['tipo'] == 'servico' and m['ativo']]
+    for i, s in enumerate(services):
+        print(f"{i}: {s['nome']} (Duração: {s['duracaoPadraoMin']} min)")
+    try:
+        idx = int(input("Índice do serviço: "))
+        if idx < 0 or idx >= len(services):
+            print("Índice inválido.")
+            return
+        service = services[idx]
+        data = input("Data (YYYY-MM-DD): ").strip()
+        # Assume 9:00 to 18:00, slots of duration
+        start = datetime.strptime(f"{data} 09:00", "%Y-%m-%d %H:%M")
+        end = datetime.strptime(f"{data} 18:00", "%Y-%m-%d %H:%M")
+        duration = timedelta(minutes=service['duracaoPadraoMin'])
+        current = start
+        while current + duration <= end:
+            hora_inicio = current.strftime("%H:%M")
+            hora_fim = (current + duration).strftime("%H:%M")
+            # Check if already exists
+            exists = any(t['id'] == service['id'] and t['data'] == data and t['hora_inicio'] == hora_inicio for t in turnos)
+            if not exists:
+                turnos.append({
+                    'id': service['id'],
+                    'data': data,
+                    'hora_inicio': hora_inicio,
+                    'hora_fim': hora_fim,
+                    'disponivel': True
+                })
+            current += duration
+        save_turnos(turnos)
+        print("Slots gerados com sucesso.")
+    except ValueError:
+        print("Entrada inválida.")
+
+def book_slot(materials, turnos):
+    print("Serviços disponíveis:")
+    services = [m for m in materials if m['tipo'] == 'servico' and m['ativo']]
+    for i, s in enumerate(services):
+        print(f"{i}: {s['nome']}")
+    try:
+        idx = int(input("Índice do serviço: "))
+        if idx < 0 or idx >= len(services):
+            print("Índice inválido.")
+            return
+        service = services[idx]
+        data = input("Data (YYYY-MM-DD): ").strip()
+        available_slots = [t for t in turnos if t['id'] == service['id'] and t['data'] == data and t['disponivel']]
+        if not available_slots:
+            print("Nenhum slot disponível para essa data.")
+            return
+        print("Slots disponíveis:")
+        for i, slot in enumerate(available_slots):
+            print(f"{i}: {slot['hora_inicio']} - {slot['hora_fim']}")
+        slot_idx = int(input("Índice do slot: "))
+        if slot_idx < 0 or slot_idx >= len(available_slots):
+            print("Índice inválido.")
+            return
+        slot = available_slots[slot_idx]
+        slot['disponivel'] = False
+        save_turnos(turnos)
+        print("Slot reservado com sucesso.")
+    except ValueError:
+        print("Entrada inválida.")
+
+def manage_services(materials, turnos):
+    while True:
+        print("Gestão de Serviços:")
+        print("1 - Gerar slots para um serviço")
+        print("2 - Reservar slot")
+        print("3 - Adicionar turno manualmente")
+        print("4 - Voltar")
+        try:
+            option = int(input("Opção: "))
+            if option == 1:
+                generate_slots(materials, turnos)
+            elif option == 2:
+                book_slot(materials, turnos)
+            elif option == 3:
+                add_manual_slot(materials, turnos)
+            elif option == 4:
+                break
+            else:
+                print("Opção inválida.")
+        except ValueError:
+            print("Entrada inválida.")
+
+def add_manual_slot(materials, turnos):
+    print("Serviços disponíveis:")
+    services = [m for m in materials if m['tipo'] == 'servico' and m['ativo']]
+    for i, s in enumerate(services):
+        print(f"{i}: {s['nome']} (Duração: {s['duracaoPadraoMin']} min)")
+    try:
+        idx = int(input("Índice do serviço: "))
+        if idx < 0 or idx >= len(services):
+            print("Índice inválido.")
+            return
+        service = services[idx]
+        data = input("Data (YYYY-MM-DD): ").strip()
+        hora_inicio_str = input("Hora de início (HH:MM): ").strip()
+        start = datetime.strptime(f"{data} {hora_inicio_str}", "%Y-%m-%d %H:%M")
+        duration = timedelta(minutes=service['duracaoPadraoMin'])
+        end = start + duration
+        hora_fim = end.strftime("%H:%M")
+        
+        # Check for overlaps
+        existing_turnos = [t for t in turnos if t['id'] == service['id'] and t['data'] == data]
+        overlap = False
+        for t in existing_turnos:
+            t_start = datetime.strptime(f"{data} {t['hora_inicio']}", "%Y-%m-%d %H:%M")
+            t_end = datetime.strptime(f"{data} {t['hora_fim']}", "%Y-%m-%d %H:%M")
+            if not (end <= t_start or start >= t_end):
+                overlap = True
+                break
+        if overlap:
+            print("Sobreposição de horário com turno existente.")
+            return
+        
+        turnos.append({
+            'id': service['id'],
+            'data': data,
+            'hora_inicio': hora_inicio_str,
+            'hora_fim': hora_fim,
+            'disponivel': True
+        })
+        save_turnos(turnos)
+        print("Turno adicionado com sucesso.")
+    except ValueError:
+        print("Entrada inválida.")
+
+def show_indicators(materials):
+    # Display various indicators about the catalog
+    print("Indicadores:")
+    
+    # Count active items
+    total_active = 0
+    active_products = 0
+    active_services = 0
+    for item in materials:
+        if item['ativo']:
+            total_active += 1
+            if item['tipo'] == 'produto':
+                active_products += 1
+            elif item['tipo'] == 'servico':
+                active_services += 1
+    print(f"Número total de itens ativos: {total_active}")
+    print(f"Número de produtos ativos: {active_products}")
+    print(f"Número de serviços ativos: {active_services}")
+    
+    # Find products with low stock
+    low_stock_items = []
+    for item in materials:
+        if item['tipo'] == 'produto' and item['ativo'] and item['stock'] is not None and item['stock'] <= 5:
+            low_stock_items.append(item)
+    if low_stock_items:
+        print("Produtos com stock baixo (≤ 5):")
+        for item in low_stock_items:
+            print(f"  - {item['nome']}: {item['stock']}")
+    else:
+        print("Nenhum produto com stock baixo.")
+    
+    # Calculate average price per category
+    from collections import defaultdict
+    price_sums = defaultdict(float)
+    price_counts = defaultdict(int)
+    for item in materials:
+        if item['ativo']:
+            price_sums[item['categoria']] += item['preco']
+            price_counts[item['categoria']] += 1
+    print("Preço médio por categoria:")
+    for category in sorted(price_sums.keys()):
+        average_price = price_sums[category] / price_counts[category]
+        print(f"  - {category}: {average_price:.2f}€")
+    
+    # Calculate average duration per category for services
+    duration_sums = defaultdict(float)
+    duration_counts = defaultdict(int)
+    for item in materials:
+        if item['ativo'] and item['tipo'] == 'servico' and item['duracaoPadraoMin'] is not None:
+            duration_sums[item['categoria']] += item['duracaoPadraoMin']
+            duration_counts[item['categoria']] += 1
+    if duration_counts:
+        print("Duração média por categoria (serviços):")
+        for category in sorted(duration_sums.keys()):
+            average_duration = duration_sums[category] / duration_counts[category]
+            print(f"  - {category}: {average_duration:.1f} min")
+    else:
+        print("Duração média por categoria (serviços):")
+        print("  - Nenhum serviço com duração definida.")
+
+def load_catalog(filename='catalogo.csv'):
+    # Load catalog from CSV file, with validations
+    materials = []
+    if not os.path.exists(filename):
+        # Create default catalog if file doesn't exist
+        default_data = [
+            {'id': 0, 'tipo': 'produto', 'nome': 'tintas', 'descricao': '', 'categoria': 'ferramentas', 'preco': 11.0, 'duracaoPadraoMin': None, 'stock': 10, 'ativo': True},
+            {'id': 1, 'tipo': 'produto', 'nome': 'martelo', 'descricao': '', 'categoria': 'ferramentas', 'preco': 1.6, 'duracaoPadraoMin': None, 'stock': 100, 'ativo': True},
+            {'id': 2, 'tipo': 'produto', 'nome': 'parafusos', 'descricao': '', 'categoria': 'ferramentas', 'preco': 5.0, 'duracaoPadraoMin': None, 'stock': 6, 'ativo': True},
+            {'id': 3, 'tipo': 'produto', 'nome': 'pincéis', 'descricao': '', 'categoria': 'ferramentas', 'preco': 9.0, 'duracaoPadraoMin': None, 'stock': 6, 'ativo': True},
+            {'id': 4, 'tipo': 'produto', 'nome': 'vernizes', 'descricao': '', 'categoria': 'ferramentas', 'preco': 14.0, 'duracaoPadraoMin': None, 'stock': 10, 'ativo': True},
+            {'id': 5, 'tipo': 'produto', 'nome': 'nivelador', 'descricao': '', 'categoria': 'ferramentas', 'preco': 23.0, 'duracaoPadraoMin': None, 'stock': 15, 'ativo': True},
+            {'id': 6, 'tipo': 'produto', 'nome': 'lixa', 'descricao': '', 'categoria': 'ferramentas', 'preco': 1.0, 'duracaoPadraoMin': None, 'stock': 150, 'ativo': True},
+            {'id': 7, 'tipo': 'produto', 'nome': 'aparafusador', 'descricao': '', 'categoria': 'ferramentas', 'preco': 55.0, 'duracaoPadraoMin': None, 'stock': 3, 'ativo': True},
+            {'id': 8, 'tipo': 'produto', 'nome': 'fita métrica', 'descricao': '', 'categoria': 'ferramentas', 'preco': 3.0, 'duracaoPadraoMin': None, 'stock': 57, 'ativo': True},
+            {'id': 9, 'tipo': 'produto', 'nome': 'serra', 'descricao': '', 'categoria': 'ferramentas', 'preco': 7.0, 'duracaoPadraoMin': None, 'stock': 5, 'ativo': True},
+        ]
+        materials = default_data
+        save_catalog(materials, filename)
+    else:
+        # Load from file with error handling
+        with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                preco = float(row['preco'])
+                if preco < 0:
+                    print(f"Aviso: Preço negativo para {row['nome']}, definindo como 0")
+                    preco = 0.0
+                stock = int(float(row['stock'])) if row['stock'] else None
+                if stock is not None and stock < 0:
+                    print(f"Aviso: Stock negativo para {row['nome']}, definindo como 0")
+                    stock = 0
+                ativo_str = row['ativo'].lower()
+                if ativo_str not in ['true', 'false']:
+                    print(f"Aviso: Ativo inválido para {row['nome']}, definindo como false")
+                    ativo = False
+                else:
+                    ativo = ativo_str == 'true'
+                material = {
+                    'id': int(row.get('id', row.get('idItem', 0))),
+                    'tipo': row['tipo'],
+                    'nome': row['nome'],
+                    'descricao': row['descricao'],
+                    'categoria': row['categoria'],
+                    'preco': preco,
+                    'duracaoPadraoMin': int(row['duracaoPadraoMin']) if row['duracaoPadraoMin'] else None,
+                    'stock': stock,
+                    'ativo': ativo
+                }
+                materials.append(material)
+    return materials
+
+def save_catalog(materials, filename='catalogo.csv'):
+    # Save catalog to CSV file
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['id', 'tipo', 'nome', 'descricao', 'categoria', 'preco', 'duracaoPadraoMin', 'stock', 'ativo']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for material in materials:
+            row = {
+                'id': material['id'],
+                'tipo': material['tipo'],
+                'nome': material['nome'],
+                'descricao': material['descricao'],
+                'categoria': material['categoria'],
+                'preco': material['preco'],
+                'duracaoPadraoMin': material['duracaoPadraoMin'] if material['duracaoPadraoMin'] is not None else '',
+                'stock': material['stock'] if material['stock'] is not None else '',
+                'ativo': str(material['ativo'])
+            }
+            writer.writerow(row)
 
 def gestao_produtos_main():
-    materialsName = [""] * 10
-    materialsQtd = [0] * 10
-    materialsPrice = [0] * 10
-    pedidoprodutoQtd = [0] * 10
+    catalog = load_catalog()
+    service_slots = load_turnos()
+    cart_quantities = [0] * len(catalog)
 
-    for i in range(0, len(pedidoprodutoQtd)):
-        pedidoprodutoQtd[i] = 0
+    add_more_items = 0
+    continue_menu = 0
+    selected_option = 0
+    total_cart_value = 0
 
-    materialsName[0] = "Tintas"
-    materialsName[1] = "Martelo"
-    materialsName[2] = "Parafusos"
-    materialsName[3] = "Pincéis"
-    materialsName[4] = "Verniz"
-    materialsName[5] = "Nivelador"
-    materialsName[6] = "Lixa"
-    materialsName[7] = "Aparafusador"
-    materialsName[8] = "Fita métrica"
-    materialsName[9] = "Serra"
+    while True:  # Main menu loop
+        # Apresentação do Menu para evitar a recursão infinita
+        print("\n" + "="*30)
+        print("      GESTÃO DE PRODUTOS")
+        print("="*30)
+        print("1  - Consultar Materiais")
+        print("2  - Adicionar ao Carrinho")
+        print("4  - Novo Material")
+        print("5  - Filtrar Materiais")
+        print("6  - Registar Entrada de Stock")
+        print("7  - Gerir Serviços")
+        print("8  - Mostrar Indicadores")
+        print("9  - Editar Item")
+        print("10 - Remover Item")
+        print("11 - Listar por Categoria")
+        print("12 - Listar por Faixa de Preço")
+        print("13 - Listar Itens Ativos")
+        print("14 - Listar Produtos sem Stock")
+        print("0  - Finalizar / Sair")
+        print("-" * 30)
 
-    materialsQtd[0] = 10
-    materialsQtd[1] = 100
-    materialsQtd[2] = 6
-    materialsQtd[3] = 6
-    materialsQtd[4] = 10
-    materialsQtd[5] = 15
-    materialsQtd[6] = 150
-    materialsQtd[7] = 3
-    materialsQtd[8] = 57
-    materialsQtd[9] = 5
+        try:
+            selected_option = int(input("Escolha uma opção: "))
+        except ValueError:
+            print("Erro: Insira um número válido!")
+            continue
 
-    materialsPrice[0] = 11
-    materialsPrice[1] = 1.6
-    materialsPrice[2] = 5
-    materialsPrice[3] = 9
-    materialsPrice[4] = 14
-    materialsPrice[5] = 23
-    materialsPrice[6] = 1
-    materialsPrice[7] = 55
-    materialsPrice[8] = 3
-    materialsPrice[9] = 7
+        if selected_option == 1:
+            materialconsultation(catalog)
+            continue_menu = 1
+        elif selected_option == 2:
+            while True:    # Cart addition loop
+                print("\nIndique o material desejado:")
+                for item_index in range(len(catalog)):
+                    print(f"{item_index} - {catalog[item_index]['nome']}")
+                
+                try:
+                    chosen_idx = int(input("ID do produto: "))
+                    print(f"Quanta quantidade de {catalog[chosen_idx]['nome']} deseja?")
+                    cart_quantities[chosen_idx] = float(input())
+                    
+                    validstock(catalog, cart_quantities)
+                    stockupdate(catalog, cart_quantities)
+                    save_catalog(catalog)
+                except (ValueError, IndexError):
+                    print("Produto inválido ou quantidade errada.")
 
-    repeat = 0
-    menuCall = 0
+                print("Deseja adicionar mais artigos ao carinho? Digite 1")
+                add_more_items = int(input())
+                if add_more_items != 1: break
+            continue_menu = 1
 
-    while True:
-        option = gestao_produtos_menu()
-        if option == 1:
-            materialconsultation_prod(materialsName, materialsPrice, materialsQtd)
-            menuCall = 1
-        elif option == 2:
-            while True:
-                print("Indique o material desejado (número):")
-                for i in range(0, len(materialsName)):
-                    print(str(i) + " - " + materialsName[i])
-                i = int(input())
-                print("Que quantidade de " + materialsName[i] + " deseja?")
-                pedidoprodutoQtd[i] = float(input())
-                validstock_prod(materialsQtd, pedidoprodutoQtd, materialsName)
-                stockupdate_prod(materialsQtd, pedidoprodutoQtd)
-                print("Deseja adicionar mais artigos ao carrinho? Digite 1 para sim")
-                repeat = int(input())
-                if repeat != 1:
-                    break
-            endcalc = calcfinal_prod(pedidoprodutoQtd, materialsPrice)
-            menuCall = 1
-        elif option == 3:
-            endcalc = calcfinal_prod(pedidoprodutoQtd, materialsPrice)
-            print("O preço do seu carrinho é de " + str(endcalc) + "€")
-            print("O seu pedido encontra-se finalizado, obrigado pelo seu voto de confiança.")
-            menuCall = 0
-        elif option == 4:
-            menuCall = 0
+        elif selected_option == 4:
+            add_new_material(catalog)
+            cart_quantities.append(0)
+            continue_menu = 1
+        elif selected_option == 5:
+            filter_materials(catalog)
+            continue_menu = 1
+        elif selected_option == 6:
+            register_stock_entry(catalog)
+            continue_menu = 1
+        elif selected_option == 7:
+            manage_services(catalog, service_slots)
+            continue_menu = 1
+        elif selected_option == 8:
+            show_indicators(catalog)
+            continue_menu = 1
+        elif selected_option == 9:
+            edit_item(catalog)
+            continue_menu = 1
+        elif selected_option == 10:
+            remove_item(catalog, service_slots)
+            cart_quantities = [0] * len(catalog)
+            continue_menu = 1
+        elif selected_option == 11:
+            list_by_category(catalog)
+            continue_menu = 1
+        elif selected_option == 12:
+            list_by_price_range(catalog)
+            continue_menu = 1
+        elif selected_option == 13:
+            list_active_items(catalog)
+            continue_menu = 1
+        elif selected_option == 14:
+            list_out_of_stock_products(catalog)
+            continue_menu = 1
+        elif selected_option == 0:
+            continue_menu = 0 # Sai do loop
         else:
-            print("Opção inválida")
-            menuCall = 1
+            print("Opção inválida!")
+            continue_menu = 1
+        
+        if continue_menu != 1: break
 
-        if menuCall != 1:
-            break
-
-
+    # Finalização
+    total_cart_value = calcfinal(cart_quantities, catalog)
+    save_catalog(catalog)
+    print(f"\nO preço do seu carrinho é de: {total_cart_value}€")
+    print("O seu pedido encontra-se finalizado. Obrigado pela confiança!")
+#------------------------------------------------------------------ A TÃO ILUMINADAA MAIN (PRINCIPAL) ------------------------------------------------------------------
 def main():
     produtosNome, produtosQtd, produtosPreco = init_inventario()
     while True:
@@ -1723,7 +2451,7 @@ def main():
         print("5 - Sair")
         escolha = int(input())
         if escolha == 1:
-            gestor_main(produtosNome, produtosQtd, produtosPreco)
+            gestor_main()
         elif escolha == 2:
             cliente_main(produtosNome, produtosQtd, produtosPreco)
         elif escolha == 3:
@@ -1735,7 +2463,6 @@ def main():
         else:
             print("Escolha inválida")
     print("Aplicação terminada")
-
 
 if __name__ == '__main__':
     main()

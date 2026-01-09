@@ -1,0 +1,2 @@
+id,idOriginal,idCliente,origem,destino,dataCriacao,janelaInicio,janelaFim,duracaoEstimadaMin,zona,prioridade,estado,idEstafeta,produto
+1,Tintas_2026-01-09 01:49:00,1,Loja Online,Fafe,2026-01-09 01:49:00,09:00,18:00,30,Fafe,Normal,pendente,,Tintas

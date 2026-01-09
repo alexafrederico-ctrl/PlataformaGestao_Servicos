@@ -10,6 +10,7 @@ ESTADO_REJEITADA  = "rejeitada"
 ESTADO_CANCELADA  = "cancelada"
 ESTADO_ATRIBUIDA  = "atribuida"
 
+
 ESTADOS = [
     ESTADO_PENDENTE,
     ESTADO_APROVADA,
