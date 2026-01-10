@@ -1,3 +1,57 @@
 ClienteID,Tipo,Mensagem,Timestamp
-1,Atualização de Estado,Pedido 1_20260109014900: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-09 01:49:00
-1,Confirmação,Pedido confirmado para Fafe - Total: 22.0€,2026-01-09 01:49:00
+123,Atualização de Estado,Pedido 123_20260110181057: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 2453.0€,2026-01-10 18:10:57
+123,Confirmação,Pedido confirmado para Braga - Total: 2453.0€,2026-01-10 18:10:57
+1,Atualização de Estado,Pedido 1_20260110181245: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 196.8€,2026-01-10 18:12:45
+1,Confirmação,Pedido confirmado para Braga - Total: 196.8€,2026-01-10 18:12:45
+1,Atualização de Estado,Pedido 1_20260110181443: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 1722.0€,2026-01-10 18:14:43
+1,Confirmação,Pedido confirmado para Braga - Total: 1722.0€,2026-01-10 18:14:43
+213,Atualização de Estado,Pedido 213_20260110181840: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 615.0€,2026-01-10 18:18:40
+213,Confirmação,Pedido confirmado para Braga - Total: 615.0€,2026-01-10 18:18:40
+123,Atualização de Estado,Pedido 123_20260110181924: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 615.0€,2026-01-10 18:19:24
+123,Confirmação,Pedido confirmado para Braga - Total: 615.0€,2026-01-10 18:19:24
+123,Atualização de Estado,Pedido 123_20260110182128: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 340.8€,2026-01-10 18:21:28
+123,Confirmação,Pedido confirmado para Braga - Total: 340.8€,2026-01-10 18:21:28
+231,Atualização de Estado,Pedido 231_20260110182430: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-10 18:24:30
+231,Confirmação,Pedido confirmado para Braga - Total: 22.0€,2026-01-10 18:24:30
+123,Atualização de Estado,Pedido 123_20260110182445: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 27899.0€,2026-01-10 18:24:45
+123,Confirmação,Pedido confirmado para Braga - Total: 27899.0€,2026-01-10 18:24:45
+1213123,Atualização de Estado,Pedido 1213123_20260110182818: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 254354441.0€,2026-01-10 18:28:18
+1213123,Confirmação,Pedido confirmado para Braga - Total: 254354441.0€,2026-01-10 18:28:18
+1231,Atualização de Estado,Pedido 1231_20260110183032: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 19700.800000000003€,2026-01-10 18:30:32
+1231,Confirmação,Pedido confirmado para Braga - Total: 19700.800000000003€,2026-01-10 18:30:32
+213131,Atualização de Estado,Pedido 213131_20260110183210: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 2344354441.0€,2026-01-10 18:32:10
+213131,Confirmação,Pedido confirmado para Fafe - Total: 2344354441.0€,2026-01-10 18:32:10
+213131,Atualização de Estado,Pedido 213131_20260110183244: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 1969970113.6000001€,2026-01-10 18:32:44
+213131,Confirmação,Pedido confirmado para Braga - Total: 1969970113.6000001€,2026-01-10 18:32:44
+2131,Atualização de Estado,Pedido 2131_20260110183523: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 19700.800000000003€,2026-01-10 18:35:23
+2131,Confirmação,Pedido confirmado para Braga - Total: 19700.800000000003€,2026-01-10 18:35:23
+21313123,Atualização de Estado,Pedido 21313123_20260110183633: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 61561565.0€,2026-01-10 18:36:33
+21313123,Confirmação,Pedido confirmado para Braga - Total: 61561565.0€,2026-01-10 18:36:33
+123,Atualização de Estado,Pedido 123_20260110184249: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 10.0€,2026-01-10 18:42:49
+123,Confirmação,Pedido confirmado para Braga - Total: 10.0€,2026-01-10 18:42:49
+1231,Atualização de Estado,Pedido 1231_20260110184623: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 2344452.0€,2026-01-10 18:46:23
+1231,Confirmação,Pedido confirmado para Braga - Total: 2344452.0€,2026-01-10 18:46:23
+123,Atualização de Estado,Pedido 123_20260110184930: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 1354441.0€,2026-01-10 18:49:30
+123,Confirmação,Pedido confirmado para Braga - Total: 1354441.0€,2026-01-10 18:49:30
+213,Atualização de Estado,Pedido 213_20260110185130: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 1.6€,2026-01-10 18:51:30
+213,Confirmação,Pedido confirmado para Braga - Total: 1.6€,2026-01-10 18:51:30
+123123,Atualização de Estado,Pedido 123123_20260110185749: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 1969.6000000000001€,2026-01-10 18:57:49
+123123,Confirmação,Pedido confirmado para Braga - Total: 1969.6000000000001€,2026-01-10 18:57:49
+12312,Atualização de Estado,Pedido 12312_20260110190718: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 10655.0€,2026-01-10 19:07:18
+12312,Confirmação,Pedido confirmado para Braga - Total: 10655.0€,2026-01-10 19:07:18
+213,Atualização de Estado,Pedido 213_20260110190821: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 196.8€,2026-01-10 19:08:21
+213,Confirmação,Pedido confirmado para Braga - Total: 196.8€,2026-01-10 19:08:21
+1231,Atualização de Estado,Pedido 1231_20260110190949: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-10 19:09:49
+1231,Confirmação,Pedido confirmado para Braga - Total: 22.0€,2026-01-10 19:09:49
+213,Atualização de Estado,Pedido 213_20260110191142: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 132.0€,2026-01-10 19:11:42
+213,Confirmação,Pedido confirmado para Braga - Total: 132.0€,2026-01-10 19:11:42
+213,Atualização de Estado,Pedido 213_20260110191318: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 196.8€,2026-01-10 19:13:18
+213,Confirmação,Pedido confirmado para Braga - Total: 196.8€,2026-01-10 19:13:18
+213,Atualização de Estado,Pedido 213_20260110191432: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 22.0€,2026-01-10 19:14:32
+213,Confirmação,Pedido confirmado para Braga - Total: 22.0€,2026-01-10 19:14:32
+123,Atualização de Estado,Pedido 123_20260110191701: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 1353.0€,2026-01-10 19:17:01
+123,Confirmação,Pedido confirmado para Fafe - Total: 1353.0€,2026-01-10 19:17:01
+123,Atualização de Estado,Pedido 123_20260110191849: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 1107.0€,2026-01-10 19:18:49
+123,Confirmação,Pedido confirmado para Braga - Total: 1107.0€,2026-01-10 19:18:49
+213,Atualização de Estado,Pedido 213_20260110192856: Estado alterado de 'Criado' para 'Confirmado' - Pedido confirmado. Total: 9.600000000000001€,2026-01-10 19:28:56
+213,Confirmação,Pedido confirmado para Braga - Total: 9.600000000000001€,2026-01-10 19:28:56

@@ -1,2 +1,2 @@
 PedidoID,ClienteID,Produto,Quantidade,Preço_Unitário,Preço_Total,Destino,Avaliação,Data,Estado
-1_20260109014900,1,Tintas,2.0,11.0,22.0,Fafe,,2026-01-09 01:49:00,Confirmado
+213_20260110192856,213,Parafusos,6.0,1.6,9.600000000000001,Braga,,2026-01-10 19:28:56,Confirmado

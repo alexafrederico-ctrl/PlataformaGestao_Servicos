@@ -1,2 +1,8 @@
-ClienteID,Evento,Produto,Status,Destino,Timestamp
-N/A,Gestor: PENDENTE,N/A,pendente,N/A,2026-01-09 01:58:10
+PedidoID,ClienteID,Estado,Descricao,Timestamp,Tracking
+213_20260110192856,213,Criado,Pedido criado com 1 produtos para Braga,2026-01-10 19:28:56,2026-01-10 19:28:56 → Criado
+213_20260110192856,213,Confirmado,Pedido confirmado. Total: 9.600000000000001€,2026-01-10 19:28:56,2026-01-10 19:28:56 → Confirmado
+213_20260110192856,213,PENDENTE,Pedido importado para o Gestor e colocado em PENDENTE,2026-01-10 19:29:04,2026-01-10 19:29:04 → PENDENTE
+213_20260110192856,213,APROVADA,Pedido importado para o Gestor e colocado em aprovada,2026-01-10 19:29:54,2026-01-10 19:29:54 → APROVADA
+213_20260110192856,213,LOCALIZACAO: BRAGA,Movido por Antoniop (Estafeta: 3) em Braga,2026-01-10 19:46:25,2026-01-10 19:46:25 → LOCALIZACAO: BRAGA
+213_20260110192856,213,ATRIBUIDA,Pedido importado para o Gestor e colocado em atribuida,2026-01-10 19:49:49,2026-01-10 19:49:49 → ATRIBUIDA
+213_20260110192856,213,ACEITE,Movido por Estafeta (Estafeta: 1),2026-01-10 19:51:03,2026-01-10 19:51:03 → ACEITE

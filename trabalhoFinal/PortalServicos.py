@@ -66,7 +66,7 @@ DF_EVENTOS = pd.DataFrame()
 DF_MENSAGENS = pd.DataFrame()
 # Importacao tardia do PortalCliente para evitar pedidos de input no arranque
 
-def _get_portal_cliente_module():
+def Portal_Cliente_get():
     """Tenta importar o modulo PortalCliente de forma tardia.
 
     Isto evita que o PortalCliente execute codigo de topo (por exemplo, inputs)
@@ -81,7 +81,7 @@ def _get_portal_cliente_module():
     except Exception:
         return None
 
-def _read_csv_if_exists(path: str) -> pd.DataFrame:
+def ler_csv_se_Existir(path: str) -> pd.DataFrame:
     """
     Helper robusto: lê CSV sem converter valores para NaN,
     e tenta manter tudo como string para evitar "nan" no tracking.
@@ -113,19 +113,19 @@ def _read_csv_if_exists(path: str) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-def load_all_client_csvs() -> None:
+def carregar_csv_info() -> None:
     """Carrega todos os CSV do cliente para DataFrames globais (DF_PEDIDOS, DF_EVENTOS, DF_MENSAGENS)."""
     global DF_PEDIDOS, DF_EVENTOS, DF_MENSAGENS
-    DF_PEDIDOS = _read_csv_if_exists(PEDIDOS_CSV)
-    DF_EVENTOS = _read_csv_if_exists(EVENTOS_CSV)
-    DF_MENSAGENS = _read_csv_if_exists(MENSAGENS_CSV)
+    DF_PEDIDOS = ler_csv_se_Existir(PEDIDOS_CSV)
+    DF_EVENTOS = ler_csv_se_Existir(EVENTOS_CSV)
+    DF_MENSAGENS = ler_csv_se_Existir(MENSAGENS_CSV)
 
 
 def load_pedidos() -> pd.DataFrame:
     """Devolve o DataFrame de pedidos (carrega do disco se necessario)."""
     global DF_PEDIDOS
     if DF_PEDIDOS.empty:
-        load_all_client_csvs()
+        carregar_csv_info()
     return DF_PEDIDOS
 
 
@@ -133,7 +133,7 @@ def load_eventos() -> pd.DataFrame:
     """Devolve o DataFrame de eventos (carrega do disco se necessario)."""
     global DF_EVENTOS
     if DF_EVENTOS.empty:
-        load_all_client_csvs()
+        carregar_csv_info()
     return DF_EVENTOS
 
 
@@ -141,7 +141,7 @@ def load_mensagens() -> pd.DataFrame:
     """Devolve o DataFrame de mensagens (carrega do disco se necessario)."""
     global DF_MENSAGENS
     if DF_MENSAGENS.empty:
-        load_all_client_csvs()
+        carregar_csv_info()
     return DF_MENSAGENS
 
 
@@ -198,13 +198,13 @@ def load_cliente_mensagens():
     return load_mensagens()
 
 
-def load_materials_dataframe():
+def load_materiais():
     """Carrega o ficheiro `materials.csv` (usa pandas).
 
     Devolve pandas.DataFrame ou list[dict] (fallback com parsing manual).
     """
     try:
-        return _read_csv_if_exists(MATERIALS_CSV)
+        return ler_csv_se_Existir(MATERIALS_CSV)
     except Exception:
         import csv
         rows = []
@@ -397,7 +397,7 @@ def _normalizar_avaliacoes_schema(df: pd.DataFrame) -> pd.DataFrame:
 
 def load_avaliacoes() -> pd.DataFrame:
     """Lê avaliações do ficheiro (retorna vazio se não existir)."""
-    return _normalizar_avaliacoes_schema(_read_csv_if_exists(AVALIACOES_CSV))
+    return _normalizar_avaliacoes_schema(ler_csv_se_Existir(AVALIACOES_CSV))
 
 
 def registar_avaliacao_servico(pedido_id: str, cliente_id: str, rating: int, comentario: str = "") -> bool:
@@ -534,13 +534,6 @@ def pedido_pode_ser_cancelado(pedido_id: str) -> bool:
 
 
 def cancelar_pedido(pedido_id: str, cliente_id: str, motivo: str = "") -> bool:
-    """
-    Cancela pedido:
-      - só se NÃO estiver atribuído (não estar em "Em Processamento" nem depois)
-      - cria evento "Cancelado"
-      - atualiza pedidos.csv (Estado)
-      - cria mensagem
-    """
     try:
         pid = str(pedido_id).strip()
         if not pid:
@@ -548,6 +541,12 @@ def cancelar_pedido(pedido_id: str, cliente_id: str, motivo: str = "") -> bool:
             return False
 
         estado_atual = obter_estado_atual_pedido(pid)
+        
+        # Verificação: significa que se o pedido não existe, ele não pode ser cancelado
+        if estado_atual == 'Desconhecido':
+            print(f"✗ Erro: O pedido com o ID '{pid}' não existe no nosso sistema.")
+            return False
+
         if not pedido_pode_ser_cancelado(pid):
             print(f"✗ Não é possível cancelar. Estado atual: '{estado_atual}' (já atribuído ou finalizado).")
             return False
@@ -564,7 +563,6 @@ def cancelar_pedido(pedido_id: str, cliente_id: str, motivo: str = "") -> bool:
     except Exception as e:
         print(f"✗ Erro ao cancelar pedido: {e}")
         return False
-
 
 def alterar_estado_pedido(pedido_id: str, novo_estado: str, cliente_id: str, descricao: str = "") -> bool:
     """
@@ -715,26 +713,75 @@ def consultaStock(produtosNome, produtosQtd, produtosPreco):
 def criacaoPedido(produtosNome, encomendas, produtosPreco):
     while True:
         apresentacaoProd(produtosNome, produtosPreco)
-        produtoSelecionado = int(input())
-        if produtoSelecionado > len(produtosNome) or produtoSelecionado == 0:
-            print("Escolha inválida")
-        else:
-            print("Indique a quantidade")
+        
+        # Proteção para a seleção do produto
+        try:
+            print("Selecione o número do produto:")
+            produtoSelecionado = int(input())
+            if produtoSelecionado > len(produtosNome) or produtoSelecionado <= 0:
+                print("Escolha inválida! Tente um número da lista.")
+                continue
+        except ValueError:
+            print("Erro: Insira apenas números para selecionar o produto.")
+            continue
+
+        # Proteção para a quantidade
+        try:
+            print("Indique a quantidade:")
             qtd = float(input())
+            if qtd < 0:
+                print("Quantidade não pode ser negativa.")
+                continue
             encomendas[produtoSelecionado - 1] = encomendas[produtoSelecionado - 1] + qtd
-        print("Quer adicionar mais produtos? Se sim, insere 1")
-        repeat = int(input())
-        if repeat != 1:
+        except ValueError:
+            print("Erro: Insira um valor numérico para a quantidade.")
+            continue
+
+        # Esquema para aceitar APENAS 1 ou 0
+        while True:
+            print("Quer adicionar mais produtos? (1-Sim e 0-Não)")
+            try:
+                entrada_repeat = input().strip()
+                # Verifica se é exatamente '1' ou '0'
+                if entrada_repeat not in ['0', '1']:
+                    print("Escolha inválida! Digite apenas 1 para Sim ou 0 para Não.")
+                else:
+                    repeat = int(entrada_repeat)
+                    break # Sai deste loop pequeno se for válido
+            except ValueError:
+                print("Escolha inválida! Digite apenas 1 ou 0.")
+
+        if repeat == 0:
             print("Boa escolha!")
             break
 
 
 def escolherDestino(destinosOpcao):
-    print("Escolha o destino: ")
-    for i in range(0, len(destinosOpcao)):
-        print(str(i + 1) + " - " + destinosOpcao[i])
-    escolha = int(input())
-    return escolha
+    while True:
+        print("\nEscolha o destino: ")
+        for i in range(0, len(destinosOpcao)):
+            print(str(i + 1) + " - " + destinosOpcao[i])
+        
+        entrada = input("Opção: ").strip()
+
+        # 1. Verifica se a entrada está vazia
+        if not entrada:
+            print("Erro: Por favor, escolha um número.")
+            continue
+
+        # 2. Tenta converter para número e validar o intervalo
+        try:
+            escolha = int(entrada)
+            
+            # Verifica se o número existe na lista (entre 1 e o tamanho da lista)
+            if 1 <= escolha <= len(destinosOpcao):
+                return escolha
+            else:
+                print(f"Escolha inválida! Por favor, escolha um número entre 1 e {len(destinosOpcao)}.")
+        
+        # 3. Se não for um número (letras ou símbolos), entra aqui
+        except ValueError:
+            print("Erro: Caracteres inválidos. Insira apenas o número correspondente ao destino.")
 
 
 def cliente_menu():
@@ -777,10 +824,21 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
     td = 0
 
     print("PORTAL DO CLIENTE")
-    try:
-        CLIENT_ID = input("Insira o seu ID de cliente: ").strip()
-    except Exception:
-        CLIENT_ID = None
+    while True:
+        entrada = input("Insira o seu ID de cliente (apenas números): ").strip()
+        
+        # 1. Verifica se está em branco
+        if not entrada:
+            print("Erro: O ID de cliente não pode estar vazio.")
+            continue
+        
+        # 2. Verifica se contém APENAS números
+        if not entrada.isdigit():
+            print("Erro: O ID é inválido. Por favor, insira apenas algarismos (0-9).")
+            continue
+            
+        CLIENT_ID = entrada
+        break
 
     while True:
         opcao = cliente_menu()
@@ -839,7 +897,7 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
 
             # (Opcional) manter PortalCliente para mensagens
             try:
-                pc = _get_portal_cliente_module()
+                pc = Portal_Cliente_get()
                 if pc is not None:
                     try:
                         pc.CLIENT_ID = CLIENT_ID
@@ -851,7 +909,7 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
                     except Exception:
                         pass
                     try:
-                        load_all_client_csvs()
+                        carregar_csv_info()
                     except Exception:
                         pass
             except Exception:
@@ -921,7 +979,7 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
                 print(f"✗ Não foi possível cancelar o pedido {pedido_id}.")
 
             try:
-                load_all_client_csvs()
+                carregar_csv_info()
             except Exception:
                 pass
 
@@ -967,7 +1025,7 @@ COL_ENCOMENDAS = [
     "zona", "prioridade", "estado", "idEstafeta", "produto"
 ]
 
-COL_EVENTOS = ["ClienteID", "Evento", "Produto", "Status", "Destino", "Timestamp"]
+COL_EVENTOS = ["PedidoID", "ClienteID", "Estado", "Descricao", "Timestamp", "Tracking"]
 COL_ATRIBUICOES = ["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao"]
 COL_ESTAFETAS = ["idEstafeta", "nome", "zona", "disponibilidade", "carga_trabalho"]
 
@@ -1000,69 +1058,103 @@ def obter_proximo_id(ficheiro, campo):
     ids = [int(d[campo]) for d in dados if d.get(campo, "").isdigit()]
     return max(ids) + 1 if ids else 1
 
+PASTA_PROJETO = os.path.dirname(os.path.abspath(__file__))
+
+def obter_caminho(nome_ficheiro):
+    return os.path.join(PASTA_PROJETO, nome_ficheiro)
+
 # ================= EVENTOS =================
-
-def registar_evento(idPedido, novo_estado):
-    criar_csv("eventos_pedido.csv", COL_EVENTOS)
-
-    eventos = ler_csv("eventos_pedido.csv")
-    encomendas = ler_csv("encomendas.csv")
-
-    enc = next((e for e in encomendas if str(e["id"]) == str(idPedido)), {})
-    
-
-    eventos.append({
-        "ClienteID": enc.get("idCliente", "N/A"),
-        "Evento": f"Gestor: {novo_estado.upper()}",
-        "Produto": enc.get("produto", "N/A"),
-        "Status": novo_estado,
-        "Destino": enc.get("zona", "N/A"),
-        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    })
-
-    guardar_csv("eventos_pedido.csv", COL_EVENTOS, eventos)
-
-# ================= IMPORTAÇÃO =================
 def importar_pedidos_do_cliente():
     if not os.path.exists("pedidos.csv"):
+        print("Erro: ficheiro pedidos.csv não existe.")
         return
 
-    pedidos_brutos = ler_csv("pedidos.csv")
-    encomendas_atuais = ler_csv("encomendas.csv")
-
-    processados = [e.get("idOriginal") for e in encomendas_atuais]
+    pedidos_origem = ler_csv("pedidos.csv")
+    encomendas_destino = ler_csv("encomendas.csv")
+    
+    processados = {str(e.get("idOriginal")).strip() for e in encomendas_destino}
     next_id = obter_proximo_id("encomendas.csv", "id")
     alterou = False
 
-    for p in pedidos_brutos:
-        id_unico = f"{p.get('Produto')}_{p.get('Data')}"
-
-        if id_unico not in processados:
-            encomendas_atuais.append({
-                "id": next_id,
-                "idOriginal": id_unico,
-                "idCliente": p.get("ClienteID", "Desconhecido"),
-                "produto": p.get("Produto", "N/A"),
+    for p in pedidos_origem:
+        id_original = str(p.get("PedidoID")).strip()
+        
+        if id_original and id_original not in processados:
+            # Criar a linha para o encomendas.csv
+            nova_enc = {
+                "id": str(next_id),
+                "idOriginal": id_original,
+                "idCliente": p.get("ClienteID"),
                 "origem": "Loja Online",
-                "destino": p.get("Destino", ""),
-                "dataCriacao": p.get("Data", datetime.now().strftime("%Y-%m-%d")),
+                "destino": p.get("Destino"),
+                "dataCriacao": p.get("Data"),
                 "janelaInicio": "09:00",
                 "janelaFim": "18:00",
                 "duracaoEstimadaMin": "30",
-                "zona": p.get("Destino", "N/A"),
+                "zona": p.get("Destino"),
                 "prioridade": "Normal",
-                "estado": ESTADO_PENDENTE,
-                "idEstafeta": ""
-            })
-
-            registar_evento(next_id, ESTADO_PENDENTE)
-            processados.append(id_unico)
+                "estado": "pendente", # Estado no encomendas.csv
+                "idEstafeta": "",
+                "produto": p.get("Produto")
+            }
+            
+            encomendas_destino.append(nova_enc)
+            # Guardamos a encomenda
+            guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas_destino)
+            
+            # ATUALIZAMOS o evento correspondente no eventos_pedido.csv
+            registar_eventosara(next_id, "PENDENTE")
+            
+            print(f"Pedido {id_original} importado com sucesso.")
             next_id += 1
             alterou = True
 
     if alterou:
-        guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas_atuais)
- 
+        print("Importação e atualização de eventos concluída.")
+    else:
+        print("")
+
+def registar_eventosara(id_interno_num, novo_estado="PENDENTE"):
+    # 1. Obter os dados da encomenda que acabámos de criar no encomendas.csv
+    encomendas = ler_csv("encomendas.csv")
+    enc = next((e for e in encomendas if str(e.get("id")) == str(id_interno_num)), {})
+    
+    id_original = enc.get("idOriginal")
+    cliente_id = enc.get("idCliente", "N/A")
+    
+    if not id_original:
+        print(f"Erro: Encomenda com ID interno {id_interno_num} não encontrada.")
+        return 
+
+    # 2. Criar o novo registo (nova linha)
+    ts_agora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    novo_evento = {
+        "PedidoID": id_original,
+        "ClienteID": cliente_id,
+        "Estado": novo_estado.upper(),
+        "Descricao": f"Pedido importado para o Gestor e colocado em {novo_estado}",
+        "Timestamp": ts_agora,
+        "Tracking": f"{ts_agora} → {novo_estado.upper()}"
+    }
+
+    # 3. Adicionar como uma nova linha no final do ficheiro
+    # Usamos a append_row_sara para garantir que não há erros de colunas
+    append_row_sara("eventos_pedido.csv", COL_EVENTOS, novo_evento)
+    
+    print(f"✔ Novo registo histórico adicionado para o pedido {id_original}: {novo_estado}")
+
+def append_row_sara(nome_ficheiro, colunas, dados):
+    caminho = obter_caminho(nome_ficheiro)
+    if isinstance(dados, dict):
+        dados = [dados]
+
+    with open(caminho, "a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=colunas, extrasaction='ignore')
+        if not os.path.exists(caminho) or os.path.getsize(caminho) == 0:
+            writer.writeheader()
+        writer.writerows(dados)
+
 #================= FUNCIONALIDADES =================
 def listar_todas():
     encomendas = ler_csv("encomendas.csv")
@@ -1108,10 +1200,10 @@ def aprovar_rejeitar_pedidos(zonas_atendidas):
         op = input("1-Aprovar, 2-Rejeitar, 3-Voltar: ")
         if op == "1":
             alvo["estado"] = ESTADO_APROVADA
-            registar_evento(alvo["id"], ESTADO_APROVADA)
+            registar_eventosara(alvo["id"], ESTADO_APROVADA)
         elif op == "2":
             alvo["estado"] = ESTADO_REJEITADA
-            registar_evento(alvo["id"], ESTADO_REJEITADA)
+            registar_eventosara(alvo["id"], ESTADO_REJEITADA)
 
         guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
 
@@ -1137,7 +1229,7 @@ def cancelar_editar_encomenda():
 
     if opcao == "1":
         enc["estado"] = ESTADO_CANCELADA
-        registar_evento(id_alvo, ESTADO_CANCELADA)
+        registar_eventosara(id_alvo, ESTADO_CANCELADA)
         print("✓ Cancelada.")
     elif opcao == "2":
         nova_zona = input(f"Nova Zona [{enc['zona']}]: ").strip()
@@ -1173,49 +1265,69 @@ def atribuir_estafetas():
     encomendas = ler_csv("encomendas.csv")
     estafetas = ler_csv("estafetas.csv")
 
-    criar_csv("atribuicoes.csv", COL_ATRIBUICOES)
-    atribuicoes = ler_csv("atribuicoes.csv")
+    # Lista apenas para as NOVAS atribuições deste momento
+    novas_atribuicoes_lista = []
 
     proximo_atrib = obter_proximo_id("atribuicoes.csv", "idAtribuicao")
     alterou = False
 
     for e in encomendas:
-        if e["estado"] == ESTADO_APROVADA:
+        # Usamos .lower() e .strip() para garantir que "aprovada" é detetado
+        if str(e.get("estado")).strip().lower() == "aprovada":
+            
+            # Filtro robusto para encontrar estafetas na mesma zona e disponíveis
             elegiveis = [
                 s for s in estafetas
-                if s["zona"].lower() == e["zona"].lower()
-                and s["disponibilidade"].lower() == "true"
+                if str(s.get("zona")).strip().lower() == str(e.get("zona")).strip().lower()
+                and str(s.get("disponibilidade")).strip().lower() == "true"
             ]
 
             if elegiveis:
-                escolhido = min(elegiveis, key=lambda x: int(x["carga_trabalho"]))
-                e["estado"] = ESTADO_ATRIBUIDA
+                # Escolhe o que tem menos carga (evita erro se carga_trabalho for vazio)
+                escolhido = min(elegiveis, key=lambda x: int(x.get("carga_trabalho", 0)))
+                
+                # 1. Atualizar dados da Encomenda
+                e["estado"] = "atribuida"
                 e["idEstafeta"] = escolhido["idEstafeta"]
-                escolhido["carga_trabalho"] = str(int(escolhido["carga_trabalho"]) + 1)
+                
+                # 2. Atualizar carga do Estafeta
+                carga_atual = int(escolhido.get("carga_trabalho", 0))
+                escolhido["carga_trabalho"] = str(carga_atual + 1)
 
-                atribuicoes.append({
-                    "idAtribuicao": proximo_atrib,
+                # 3. Criar a linha da Atribuição
+                atrib_row = {
+                    "idAtribuicao": str(proximo_atrib),
                     "idPedido": e["id"],
                     "idEstafeta": escolhido["idEstafeta"],
                     "dataAtribuicao": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                })
+                }
+                novas_atribuicoes_lista.append(atrib_row)
 
-                registar_evento(e["id"], ESTADO_ATRIBUIDA)
+                # 4. REGISTAR NO HISTÓRICO (Cria nova linha no eventos_pedido.csv)
+                # IMPORTANTE: Garante que usas a tua função registar_eventosara
+                registar_eventosara(e["id"], "atribuida")
+                
                 proximo_atrib += 1
                 alterou = True
 
     if alterou:
+        # Sobrescrevemos encomendas e estafetas porque os estados globais mudaram
         guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
         guardar_csv("estafetas.csv", COL_ESTAFETAS, estafetas)
-        guardar_csv("atribuicoes.csv", COL_ATRIBUICOES, atribuicoes)
-
+        
+        # ACRESCENTAMOS (append) as novas atribuições sem apagar as antigas
+        append_row_sara("atribuicoes.csv", COL_ATRIBUICOES, novas_atribuicoes_lista)
+        
+        print(f"✔ Sucesso: {len(novas_atribuicoes_lista)} encomendas foram atribuídas a estafetas.")
+    else:
+        print("ℹ Nenhuma atribuição realizada: Verifica se há estafetas disponíveis na zona das encomendas aprovadas.")    
 # ================= MENU =================
 
 def gestor_main():
     criar_csv("encomendas.csv", COL_ENCOMENDAS)
     criar_csv("eventos_pedido.csv", COL_EVENTOS)
 
-    ZONAS_ATENDIDAS = ["Braga", "Guimarães", "Famalicão", "Fafe"]
+    ZONAS_ATENDIDAS = ["Braga", "Guimarães", "Fafe"]
 
     while True:
         importar_pedidos_do_cliente()
@@ -1249,8 +1361,12 @@ def gestor_main():
 
 # ------------------- CONFIGURAÇÃO DE CSV -------------------
 COL_ATRIBUICOES = ["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao", "decisao"]
-COL_ENCOMENDAS = ["id", "idOriginal", "idCliente", "origem", "destino", "dataCriacao", "janelaInicio", "janelaFim", "duracaoEstimadaMin", "zona", "prioridade", "estado", "idEstafeta"]
-COL_EVENTOS = ["idEvento", "idPedido", "estado", "utilizador", "idEstafeta", "localizacao", "timestamp"]
+COL_ENCOMENDAS = [
+    "id", "idOriginal", "idCliente", "origem", "destino", "dataCriacao",
+    "janelaInicio", "janelaFim", "duracaoEstimadaMin",
+    "zona", "prioridade", "estado", "idEstafeta", "produto"
+]
+COL_EVENTOS = ["PedidoID", "ClienteID", "Estado", "Descricao", "Timestamp", "Tracking"]
 COL_ESTAFETAS = ["idEstafeta", "nome", "zona", "disponibilidade", "carga_trabalho"]
 COL_ANOMALIAS = ["idAnomalia", "idPedido", "idEstafeta", "motivo", "descricao", "timestamp"]
 COL_MENSAGENS = ["ClienteID", "Tipo", "Mensagem", "Timestamp"]
@@ -1278,7 +1394,7 @@ def guardar_csv(nome, colunas, dados):
         writer.writerows(dados)
 
 
-def append_row(nome, colunas, row):
+def append_rowjoao(nome, colunas, row):
     garantir_csv(nome, colunas)
     rows = ler_csv(nome)
     rows.append(row)
@@ -1291,19 +1407,42 @@ def obter_proximo_id(ficheiro, campo):
     return max(ids, default=0) + 1
 
 
-def registar_evento(idPedido, novo_estado, utilizador="Estafeta", idEstafeta="", localizacao=""):
-    novo_id = obter_proximo_id("eventos_pedido.csv", "idEvento")
+def registar_eventojoao(idPedido, novo_estado, utilizador="Estafeta", idEstafeta="", localizacao=""):
+    # 1. Obter dados da encomenda (para o idOriginal e idCliente que tu usas)
+    encomendas = ler_csv("encomendas.csv")
+    # Procuramos pelo ID interno (o número)
+    enc = next((e for e in encomendas if str(e.get("id")).strip() == str(idPedido).strip()), {})
+    
+    id_orig = enc.get("idOriginal", str(idPedido))
+    id_cli = enc.get("idCliente", "N/A")
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # 2. Mapear os dados do João para as TUAS colunas (COL_EVENTOS)
+    # Criamos uma descrição que inclua a localização e o estafeta que o João enviou
+    descricao_composta = f"Movido por {utilizador}"
+    if idEstafeta:
+        descricao_composta += f" (Estafeta: {idEstafeta})"
+    if localizacao:
+        descricao_composta += f" em {localizacao}"
+
     row = {
-        "idEvento": str(novo_id),
-        "idPedido": str(idPedido),
-        "estado": novo_estado,
-        "utilizador": utilizador,
-        "idEstafeta": str(idEstafeta) if idEstafeta is not None else "",
-        "localizacao": localizacao,
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        "PedidoID": id_orig,
+        "ClienteID": id_cli,
+        "Estado": str(novo_estado).upper(),
+        "Descricao": descricao_composta,
+        "Timestamp": ts,
+        "Tracking": f"{ts} → {str(novo_estado).upper()}"
     }
-    append_row("eventos_pedido.csv", COL_EVENTOS, row)
-    atualizar_estado_por_evento(idPedido, novo_estado, idEstafeta) 
+
+    # 3. Guardar usando a tua função segura (SARA) 
+    # Ela vai ignorar o 'idEvento' ou outros campos se eles aparecerem
+    append_row_sara("eventos_pedido.csv", COL_EVENTOS, row)
+    
+    # 4. Manter a lógica de atualização de estado que o João criou
+    if 'atualizar_estado_por_evento' in globals():
+        atualizar_estado_por_evento(idPedido, novo_estado, idEstafeta)
+    
+    print(f"✔ Evento do Estafeta registado: {id_orig} -> {novo_estado}")
 
 
 def registar_anomalia(idPedido, idEstafeta, motivo, descricao=""):
@@ -1315,11 +1454,11 @@ def registar_anomalia(idPedido, idEstafeta, motivo, descricao=""):
         "descricao": descricao,
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
-    append_row("anomalias.csv", COL_ANOMALIAS, row)
+    append_rowjoao("anomalias.csv", COL_ANOMALIAS, row)
 
 
 def registar_mensagem(cliente_id, tipo, mensagem):
-    append_row("mensagens.csv", COL_MENSAGENS, {
+    append_rowjoao("mensagens.csv", COL_MENSAGENS, {
         "ClienteID": cliente_id,
         "Tipo": tipo,
         "Mensagem": mensagem,
@@ -1533,7 +1672,7 @@ def aceitarRecusar(tarefas, mapping, idEstafeta):
                 atrib["dataAtribuicao"] = atrib.get("dataAtribuicao") or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
             guardar_csv("atribuicoes.csv", COL_ATRIBUICOES, atribuicoes)
-            registar_evento(idPedido, "aceite", utilizador="Estafeta", idEstafeta=idEstafeta)
+            registar_eventojoao(idPedido, "aceite", utilizador="Estafeta", idEstafeta=idEstafeta)
             print(f"Encomenda {idPedido} aceite e estado alterado para 'atribuida'.")
 
         elif op == "2":
@@ -1551,7 +1690,7 @@ def aceitarRecusar(tarefas, mapping, idEstafeta):
                 if any(k in novo.lower() for k in ["recol", "conclu", "entreg", "falh"]):
                     loc = input("Introduza a localização (morada ou coordenadas) para registar no evento (deixe vazio para omitir): ").strip()
 
-                registar_evento(idPedido, novo, utilizador="Estafeta", idEstafeta=idEstafeta, localizacao=loc)
+                registar_eventojoao(idPedido, novo, utilizador="Estafeta", idEstafeta=idEstafeta, localizacao=loc)
                 print(f"A encomenda passou ao estado: {novo}")
             else:
                 print("Estado inválido.")
@@ -1572,7 +1711,7 @@ def aceitarRecusar(tarefas, mapping, idEstafeta):
                 atrib["decisao"] = "recusado"
             guardar_csv("encomendas.csv", COL_ENCOMENDAS, encomendas)
             guardar_csv("atribuicoes.csv", COL_ATRIBUICOES, atribuicoes)
-            registar_evento(idPedido, f"recusado: {motivo_text}", utilizador="Estafeta", idEstafeta=idEstafeta)
+            registar_eventojoao(idPedido, f"recusado: {motivo_text}", utilizador="Estafeta", idEstafeta=idEstafeta)
             # Registar anomalia e notificar gestor
             registar_anomalia(idPedido, idEstafeta, motivo_text, descricao=motivo_text)
             registar_mensagem("gestor", "Anomalia", f"Anomalia reportada no pedido {idPedido} por estafeta {idEstafeta}: {motivo_text}")
@@ -1625,7 +1764,7 @@ def estafeta_main():
             print("Qual o ID do pedido (número) que está a realizar?")
             idPedido = input().strip()
             loc = input("Qual a sua localização atual: ")
-            registar_evento(idPedido, f"localizacao: {loc}", utilizador=nome, idEstafeta=idEstafeta, localizacao=loc)
+            registar_eventojoao(idPedido, f"localizacao: {loc}", utilizador=nome, idEstafeta=idEstafeta, localizacao=loc)
             print("Localização registada.")
 
         elif opc == "4":
@@ -1634,7 +1773,7 @@ def estafeta_main():
             print("Qual o ID do seu pedido?")
             idPedido = input().strip()
             motivo = input("Descreva a anomalia: ")
-            registar_evento(idPedido, f"anomalia: {motivo}", utilizador=nome, idEstafeta=idEstafeta)
+            registar_eventojoao(idPedido, f"anomalia: {motivo}", utilizador=nome, idEstafeta=idEstafeta)
             # opcionalmente marcar como rejeitada
             encomendas = ler_csv("encomendas.csv")
             encom = next((x for x in encomendas if str(x.get("id")) == str(idPedido)), None)
@@ -2449,7 +2588,21 @@ def main():
         print("3 - Portal Estafeta")
         print("4 - Portal Gestão Produtos")
         print("5 - Sair")
-        escolha = int(input())
+        # No teu main(), substitui isto:
+        # escolha = int(input())
+
+        # Por isto:
+        entrada = input("Escolha uma opção: ").strip()
+
+        if not entrada: # Se o utilizador apenas carregou em Enter
+            print("Por favor, digite um número.")
+            continue # Volta ao início do ciclo do menu
+
+        if not entrada.isdigit(): # Se o utilizador escreveu letras em vez de números
+            print("Entrada inválida. Digite apenas números.")
+            continue
+
+        escolha = int(entrada)
         if escolha == 1:
             gestor_main()
         elif escolha == 2:
