@@ -1,2 +1,5 @@
 PedidoID,ClienteID,Produto,Quantidade,Preço_Unitário,Preço_Total,Destino,Avaliação,Data,Estado
 213_20260110192856,213,Parafusos,6.0,1.6,9.600000000000001,Braga,,2026-01-10 19:28:56,Confirmado
+221_20260110195806,221,Tintas,3.0,11.0,33.0,Braga,,2026-01-10 19:58:06,Confirmado
+223_20260110195842,223,Parafusos,4.0,1.6,6.4,Fafe,,2026-01-10 19:58:42,Confirmado
+897_20260110231426,897,Lixa,5.0,1.0,5.0,Guimarães,,2026-01-10 23:14:26,Confirmado

@@ -1002,7 +1002,7 @@ def cliente_main(produtosNome, produtosQtd, produtosPreco):
     print("Continuação de um ótimo dia")
 
 
-#--------------------------------------------------------------------------------- Gestor de encomendas (SARA)-------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------- Portal Gestao Encomendas (SARA)-------------------------------------------------------------------------------------------------
 
 # ================= CONSTANTES =================
 ESTADO_PENDENTE   = "pendente"
@@ -1320,7 +1320,8 @@ def atribuir_estafetas():
         
         print(f"✔ Sucesso: {len(novas_atribuicoes_lista)} encomendas foram atribuídas a estafetas.")
     else:
-        print("ℹ Nenhuma atribuição realizada: Verifica se há estafetas disponíveis na zona das encomendas aprovadas.")    
+        print("ℹ Nenhuma atribuição realizada: Verifica se há estafetas disponíveis na zona das encomendas aprovadas.") 
+
 # ================= MENU =================
 
 def gestor_main():
@@ -1357,7 +1358,7 @@ def gestor_main():
         elif op == "6":
             break
 
-# ------------------ ------------------ ------------------ ------------------ Estafeta functions (JOÂO)---------------------------- ------------------ ------------------ ------------------ ------------------ --------
+# ------------------ ------------------ ------------------ ------------------ Portal Esrafeta (JOÂO)---------------------------- ------------------ ------------------ ------------------ ------------------ --------
 
 # ------------------- CONFIGURAÇÃO DE CSV -------------------
 COL_ATRIBUICOES = ["idAtribuicao", "idPedido", "idEstafeta", "dataAtribuicao", "decisao"]
@@ -1800,7 +1801,7 @@ def estafeta_main():
         else:
             print("Opção inválida. Tente novamente.")
 
-# ------------------------------------------------------------------------------------------ Portal Gestão de Produtos (MARIA)------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------ Portal Gestao de Produtos (MARIA)------------------------------------------------------------------------------------------
  
 def calcfinal(pedidoprodutoQtd, materials):
     # Calculate the total price of items in the cart
@@ -2578,7 +2579,7 @@ def gestao_produtos_main():
     save_catalog(catalog)
     print(f"\nO preço do seu carrinho é de: {total_cart_value}€")
     print("O seu pedido encontra-se finalizado. Obrigado pela confiança!")
-#------------------------------------------------------------------ A TÃO ILUMINADAA MAIN (PRINCIPAL) ------------------------------------------------------------------
+#------------------------------------------------------------------ MAIN (PRINCIPAL) ------------------------------------------------------------------
 def main():
     produtosNome, produtosQtd, produtosPreco = init_inventario()
     while True:
@@ -2619,3 +2620,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

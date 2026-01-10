@@ -1,2 +1,5 @@
 id,idOriginal,idCliente,origem,destino,dataCriacao,janelaInicio,janelaFim,duracaoEstimadaMin,zona,prioridade,estado,idEstafeta,produto
 1,213_20260110192856,213,Loja Online,Braga,2026-01-10 19:28:56,09:00,18:00,30,Braga,Normal,atribuida,1,Parafusos
+2,221_20260110195806,221,Loja Online,Braga,2026-01-10 19:58:06,09:00,18:00,30,Braga,Normal,atribuida,1,Tintas
+3,223_20260110195842,223,Loja Online,Fafe,2026-01-10 19:58:42,09:00,18:00,30,Fafe,Normal,rejeitada,,Parafusos
+4,897_20260110231426,897,Loja Online,Guimarães,2026-01-10 23:14:26,09:00,18:00,30,Guimarães,Normal,aprovada,,Lixa
